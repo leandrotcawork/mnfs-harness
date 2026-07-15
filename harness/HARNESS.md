@@ -21,6 +21,9 @@ field findings from that program carry over where marked.
 | **Investigator / bulk reads** | **GPT-5.6 Luna, medium reasoning** via codex subagent (default); `caveman:cavecrew-investigator` (haiku) allowed for trivial repo greps | Find files, read/summarize, return compressed report — offloads Opus context AND Claude quota | Suggesting fixes beyond the report |
 | **Per-slice reviewer** | Independent Claude reviewer subagent (sonnet / cavecrew-reviewer) | Reviews each slice before the next starts; implementer ≠ reviewer, always | Generating new scope |
 | **Final dual gate** | **Full Opus review + GPT-5.6 Sol medium review** (both independent, same fixed SHA) | Milestone-end diff review per §4 obligation 4 (canonical statement) | — |
+| **Mission co-planner** | **GPT-5.6 Sol, medium** via `/codex:rescue` | Planning P3: BLIND counter-proposal (spine + milestone split + risks) from the frozen P0–P2 evidence — never sees Claude's candidate | Seeing Claude's draft; writing artifacts |
+| **Mission decomposition auditor** | **GPT-5.6 Sol, medium** via `/codex:rescue` | Planning P5: audits DAG edges, six-axis disjointness, contract propagation, brief density — blocking subgate before P6 | New scope; implementation planning |
+| **Mission readiness gate** | **GPT-5.6 Sol, HIGH** via `/codex:rescue` | Planning P7: full-tree ★1–★7 rubric review of the frozen manifest AFTER the Claude cold crew is Ready; plan is `planned` only when BOTH clear | Sampled pass; editing artifacts |
 | **QA persona** | Fresh session/agent, zero inherited context, browser tools | Milestone-close validation as a USER (mission VC Drive blocks); curl-only = FAIL | Reading implementation diffs first; fixing |
 | **Mechanical** | Haiku subagent | Renames, comment sweeps, format-only | Judgment work |
 
@@ -131,6 +134,8 @@ A milestone whose internal parallelism needs a second WRITER on a shared seam st
 if clean.
 
 **Collision matrix — two tracks run concurrently ONLY when disjoint on ALL axes.**
+Axis definitions are canonical in the mission ownership-matrix columns (planning reference
+card); this table restates them, never redefines them.
 Source of truth: the mission's `## Parallel Execution Plan` (mission.md) — planning authors the
 DAG + per-milestone ownership matrix on these same six axes at P5, and each milestone.md carries
 an `## Ownership & Concurrency` block; the hub verifies at dispatch time instead of deriving the

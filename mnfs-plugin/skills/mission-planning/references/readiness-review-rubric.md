@@ -1,6 +1,6 @@
 # Mission Readiness Review Rubric
 
-Authority for the independent P7 gate. Run by the `mission-reviewer` cold subagent, never self-graded by the planning session. Content-based binary criteria — NO numeric score. Each criterion: run the named procedure, write a one-line rationale + a cited excerpt (`relative/path:line`) BEFORE the verdict. If a criterion cannot be evaluated from the artifacts, its verdict is FAIL.
+Authority for the independent P7 gate. Run by the `mission-reviewer` cold subagent (Claude side) AND by the Sol HIGH readiness reviewer (dual-model side — same ★1–★7 criteria, same verdict rule, over the same frozen manifest), never self-graded by the planning session. Content-based binary criteria — NO numeric score. Each criterion: run the named procedure, write a one-line rationale + a cited excerpt (`relative/path:line`) BEFORE the verdict. If a criterion cannot be evaluated from the artifacts, its verdict is FAIL.
 
 Reference-guided: grade each downstream artifact against its parent brief and the interface contracts, not against intuition.
 
@@ -15,7 +15,7 @@ Reference-guided: grade each downstream artifact against its parent brief and th
 - PASS iff: zero divergence across files and with the parent; the Error Matrix covers every feature-returned case; every list operation declares ordering.
 
 ### ★3 Seam Ownership
-- Procedure: enumerate cross-worker seams — route namespace (client + server), transport (cookies incl `sameSite`/`secure`/`httpOnly`, CORS origin, credentials mode, dev proxy), shared mutable files, version/env pins, id/time formats. For each, find the owning IC or ADR. Then audit the concurrency contract: for every pair declared parallel (mission `Parallel Execution Plan` DAG `∥`, milestone `Runs in parallel with`, feature `Parallel-safe with`), verify the two ownership rows are disjoint on all six collision axes (files/modules, OpenAPI sections, migration blocks, FE surface, DB tables, shared seams); verify every predicted shared-seam addition is NAMED as a seam lock; verify every milestone that adds migrations has an explicit pre-allocated block.
+- Procedure: enumerate cross-worker seams — route namespace (client + server), transport (cookies incl `sameSite`/`secure`/`httpOnly`, CORS origin, credentials mode, dev proxy), shared mutable files, version/env pins, id/time formats. For each, find the owning IC or ADR. Then audit the concurrency contract: for every pair declared parallel (mission `Parallel Execution Plan` DAG `∥`, milestone `Runs in parallel with`, feature `Parallel-safe with`), verify the two ownership rows are disjoint on all six collision axes — canonical definition: the mission `Parallel Execution Plan` ownership-matrix columns (Files/modules, OpenAPI sections, Migration block, FE surface, DB tables, Seam locks); the harness collision matrix restates these same axes, never redefines them — verify every predicted shared-seam addition is NAMED as a seam lock; verify every milestone that adds migrations has an explicit pre-allocated block.
 - PASS iff: every enumerated seam is owned by an interface contract or ADR; AND no declared-parallel pair overlaps on any collision axis without a named seam lock; AND no migration-adding milestone lacks an allocated block. A `∥` declaration without a disjointness-provable ownership row is a FAIL at that locus.
 
 ### ★4 Verifiability
@@ -28,7 +28,7 @@ Reference-guided: grade each downstream artifact against its parent brief and th
 
 ### ★6 Evidence Honesty
 - Procedure: find every version-sensitive claim (library/API/CLI/framework/cloud behavior). Check each is `verified` (source + date) OR explicitly `assumed`/`verify-at-install`.
-- PASS iff: no version-sensitive claim is silently `accepted`. A claim marked `verify-at-install` passes; if it is load-bearing for an architecture decision, log a should-meet advisory recommending live verification.
+- PASS iff: no version-sensitive claim is silently `accepted`. A claim marked `verify-at-install` passes ONLY when it is not load-bearing. A claim is load-bearing when an architecture decision (ADR), interface contract, or milestone boundary depends on it: a load-bearing claim must be `verified` (source + date) OR recorded under `Clarified Decisions` -> `Accepted assumptions:` with an explicit operator-accepted fallback if it proves false — otherwise ★6 FAILS at that locus.
 
 ### ★7 Security Posture
 - Procedure: determine whether the to-be-built scope has an auth boundary or handles PII/secrets/multi-role authorization. If it does, confirm Security appears in mission `## Quality Attributes` with ≥1 mitigation AND ≥1 Security-typed validation criterion, OR appears in `## Non-Functional Scope` with an explicit reason. If the scope has no such surface, this criterion is N/A and PASSES.

@@ -47,17 +47,15 @@ Run mission planning as a gated state machine. Resolve the current phase first, 
 - **P0 INTAKE** — capture goal, constraints, non-goals, quality bar (feeds P1c), workspace root, implementation root, artifact root. Light context scan for empty/git/existing-mission.
 - **P1 CLARIFY (GATE)** — three ordered passes then one STOP: **P1a Domain Scan** (capability include/exclude — see `## Domain Capability Scan`), **P1b Architecture Clarify** (blocking ambiguity taxa over the chosen capability set — see `## Architecture Clarification (P1b)`), then **P1c Quality-Attribute & Risk Scan** (non-functional bars over the chosen surface — see `## Quality Attribute & Risk Scan`). Run all three back-to-back and STOP once after they resolve. If a pass finds nothing, record `no blocking ambiguity` / `no quality bars beyond baseline` and continue.
 - **P2 RESEARCH** — only after answers. Delegate research to isolated workers for context hygiene: dispatch `external-researcher` (external docs/version-sensitive behavior, via the Context7 `ctx7` CLI + `npm view` + `WebFetch` — MCP is unreachable in subagents) or `codebase-investigator` (repo facts) via Task. Bounded, targeted research on plan-shaping decisions; record to `research/*.md`; link, do not copy. Expect `verified` rows when `ctx7`/`npm view` succeed; only genuinely unreachable claims stay `verify-at-install`.
-- **P3 SCOPE (GATE)** — propose outcome, architecture spine (ADR-lite), and milestone HEADLINES only. STOP for scope approval. No feature briefs or full contracts yet.
+- **P3 SCOPE (GATE)** — draft outcome, architecture spine (ADR-lite), and milestone HEADLINES only, then run the **Sol co-planning pass** (see `## Dual-Model Planning — Sol Touchpoints`, P3): a blind GPT-5.6 Sol (medium) counter-proposal from the same frozen P0–P2 evidence, reconciled before the STOP. STOP for scope approval, surfacing only owner-authority disagreements. No feature briefs or full contracts yet.
 - **P4 ARCHITECTURE** — finalize spine and author shared interface contracts.
-- **P5 DECOMPOSE** — milestone bodies and worker-sized feature briefs using EARS scenarios (`While <precondition>, when <trigger>, the <system> shall <response>.`). Decompose **parallel-first**: prefer a milestone/feature split whose units own DISJOINT surfaces (files/modules, OpenAPI sections, migration ranges, FE routes/components, DB tables) so independent workers can implement them concurrently; serialize only where a true data/contract dependency exists, and name that dependency. Author the mission `## Parallel Execution Plan` (dependency DAG + per-milestone ownership matrix) and each milestone's `## Ownership & Concurrency` block in this phase.
+- **P5 DECOMPOSE** — milestone bodies and worker-sized feature briefs using EARS scenarios (`While <precondition>, when <trigger>, the <system> shall <response>.`). Decompose **parallel-first**: prefer a milestone/feature split whose units own DISJOINT surfaces (files/modules, OpenAPI sections, migration ranges, FE routes/components, DB tables) so independent workers can implement them concurrently; serialize only where a true data/contract dependency exists, and name that dependency. Author the mission `## Parallel Execution Plan` (dependency DAG + per-milestone ownership matrix) and each milestone's `## Ownership & Concurrency` block in this phase. Close P5 with the **Sol decomposition audit** (see `## Dual-Model Planning — Sol Touchpoints`, P5): a blocking internal subgate before P6 — no operator STOP unless a finding requires an owner decision.
 - **P6 VALIDATION** — mission and milestone validation contracts with stable criteria IDs and concrete evidence paths.
-- **P7 READINESS** — run the slim author pre-check, then dispatch a **crew of cold, independent `mission-reviewer` subagents in parallel via Task**, each with the absolute `<mission-root>`, the absolute path to `references/readiness-review-rubric.md`, and a `<scope>` covering one criterion cluster so each reviewer reads the whole artifact tree with undivided attention (this defeats the lost-in-the-middle dilution a single 10-criteria pass suffers):
-    - `<scope>` = ★1 Completeness + ★5 Traceability;
-    - `<scope>` = ★2 Consistency + ★3 Seam Ownership;
-    - `<scope>` = ★4 Verifiability + ★6 Evidence Honesty;
-    - `<scope>` = ★7 Security Posture (adversarial);
-    - plus `<scope>` = ★2 Consistency + ★7 Security Posture as an independent adversarial double-pass over the two highest-blast-radius criteria, where a missed cross-worker divergence or unguarded auth/PII surface ships silently.
-  Each reviewer returns per-criterion findings (PASS/FAIL with cited excerpt; FAIL adds defect locus + yes-if); none computes the seven-★ verdict. **Fold (computed, not chosen):** union every reviewer's findings; a ★ criterion FAILS if ANY reviewer that covered it returns FAIL at a cited locus; the fold NEVER downgrades a sub-reviewer FAIL to PASS. Compute the verdict by the rubric's fixed rule (all seven ★ PASS = Ready) and persist the synthesized review to `<mission-root>/readiness-review.md`. If parallel Task dispatch is unavailable, fall back to a single full-pass `mission-reviewer` (no `<scope>`) plus the ★2+★7 adversarial pass. Then run the auto-revise loop: apply each auto-fixable yes-if condition at the cited defect locus (file:line) in this session; route un-automatable findings (e.g. unverified research) to `external-researcher`; re-dispatch a fresh crew; cap at 3 rounds, then persist `blocked` and escalate the open yes-if conditions to the operator. Persist `planned` / `needs_revision` / `blocked` in `mission.md`.
+- **P7 READINESS — DUAL-MODEL GATE** — run the slim author pre-check, freeze a
+  content-addressed readiness input, run the cold Claude reviewer crew, and only after its
+  folded verdict is `Ready`, run one independent GPT-5.6 Sol HIGH full-tree review against the
+  same rubric and the same frozen input. The mission becomes `planned` only when both
+  model-side verdicts are `Ready`. Full procedure: `## P7 Dual-Model Readiness Gate`.
 
 ### Gate Rule
 
@@ -69,6 +67,159 @@ Do not emit milestone bodies, feature briefs, or interface contracts until the P
 2. Else infer from conversation: no answers + ambiguity -> P1; answers present, no scope approval -> P2/P3; scope approved -> P4+.
 
 Dry-run infers and writes nothing; `--apply` persists `planning_phase` in `mission.md`. This same file-based resume is the intended between-gate restart path on large missions (see Context Budget), not only a crash-recovery fallback.
+
+## Dual-Model Planning — Sol Touchpoints
+
+Planning is a dual-model process: GPT-5.6 Sol co-plans and gates alongside the Claude planning
+session. Exactly three mandatory Sol touchpoints per mission (P3 medium, P5 medium, P7 high) —
+do not add P1/P2 Sol calls (P1 is operator-owned clarification; P2 is evidence acquisition;
+Sol consumes and challenges both at P3). Dispatch via `/codex:rescue --wait` per the
+harness `codex-dispatch` role matrix; artifacts live under `<mission-root>/planning-reviews/`.
+
+Every Sol dispatch prompt MUST carry: role + round number; absolute workspace and mission
+roots; absolute rubric/manifest paths with expected digest; allowed input paths and prescribed
+traversal order; a read-only/no-write instruction; the structured output contract. Persist Sol
+stdout VERBATIM to its artifact; Claude writes a SEPARATE reconciliation artifact — never
+paraphrase Sol's result into the only durable record.
+
+**P3 — independent co-planner (Sol medium).** After P2 evidence closes and Claude drafts its
+candidate spine + milestone headlines, freeze the P0–P2 evidence manifest
+(`planning-reviews/p3-input-rNN.sha256`) and persist Claude's candidate
+(`p3-claude-candidate-rNN.md`). Dispatch Sol BLIND: it reads the frozen evidence manifest but
+is DENIED Claude's candidate — a counter-proposal (spine + milestone split + top risks) to
+`p3-sol-counterproposal-rNN.md`. Reconcile to `p3-reconciliation-rNN.md`: mark
+`dual-model agreement` only when material semantics match (rationale, trade-offs, dependencies,
+must-preserve — not just matching names); resolve evidence-answerable and editorial differences
+yourself, recording the evidence; surface at the P3 STOP only disagreements that alter scope,
+an irreversible/cross-worker decision, risk acceptance, or milestone dependency. Rerun P3 only
+after material scope/spine/headline changes.
+
+**P5 — decomposition auditor (Sol medium).** After milestone bodies, feature briefs, DAG and
+ownership matrix exist and BEFORE P6, freeze `p5-input-rNN.sha256` and dispatch Sol to audit
+exactly: DAG edge completeness and justification (missing/false edges); canonical six-axis
+disjointness, seam locks, migration allocation; propagation of approved ADR/interface-contract
+values into feature briefs; required `Inputs/Outputs`, negative scenarios, UI state/interaction
+models; no implementation planning or new product scope. Persist to
+`p5-sol-decomposition-audit-rNN.md`, reconcile to `p5-reconciliation-rNN.md`. Blocking internal
+subgate: fold findings before P6 begins; no operator STOP unless a finding requires an owner
+decision. Rerun P5 after any change to the DAG, ownership, interface propagation, or briefs.
+
+**Reconciliation rule (normative, all touchpoints).** A phase advances only when every valid
+blocking finding from every required reviewer is closed in the reviewed artifacts. A valid
+blocking finding names the rubric criterion (or audit check), cited excerpt, exact defect locus
+and offending token, and a yes-if condition grounded in approved scope or an existing contract.
+The planning session MUST NOT downgrade, vote away, reinterpret, or omit a valid FAIL. It may
+advance only by changing the artifacts so all valid yes-if conditions are simultaneously
+satisfied, or by obtaining and recording an operator decision where the conditions require
+owner authority. Conflicting conditions that cannot simultaneously be satisfied produce
+`blocked` immediately (never burn rounds in a Claude–Sol loop). Advisory findings never change
+the verdict. Any source-artifact change invalidates every downstream review whose input digest
+no longer matches; a completed Sol result may be reused only when its recorded input digest
+exactly matches the current manifest.
+
+**Failure/skip rule.** Retry one transport/malformed-response failure in the same round. If
+`/codex:rescue` is unavailable, request the harness-authorized hub fallback with the same
+model, effort, manifest, and output contract. If no valid Sol result can be obtained, persist
+`planning-reviews/sol-unavailable-<phase>-rNN.md`, set `status: blocked`, retain the current
+`planning_phase`, and escalate. There is NO Claude substitution and NO skip that permits
+`status: planned`.
+
+## P7 Dual-Model Readiness Gate
+
+P7 is a sequential dual gate. Claude and Sol review the SAME immutable planning input. Neither
+reviewer edits planning artifacts. Reviews verify approved scope; they do not generate new scope.
+
+### 1. Freeze the round input
+
+For round `<NN>`, generate `<mission-root>/planning-reviews/p7-input-r<NN>.sha256`: a
+deterministic, sorted list of relative path + SHA-256 for every planning source used by the
+gate — `mission.md`; mission `validation-contract.md`; `architecture-map.md` when present; all
+planning research and shared interface contracts; the accepted P3/P5 reconciliation artifacts;
+every `M-*/milestone.md`; every milestone `validation-contract.md`; every `M-*/F-*/feature.md`.
+Exclude P7 manifests and review outputs, `readiness-review.md`, QA `validation-result.md`
+files, and feature-execution artifacts (`spec.md`, `plan.md`, `validation.md`). Record a
+top-level digest over the sorted entries.
+
+After the manifest is written, do not modify any manifested file until both required reviews
+for the round have returned. Recompute the manifest before accepting either model-side verdict.
+Any digest drift invalidates the round's verdicts; create a new round after the sources
+stabilize.
+
+### 2. Run the Claude cold crew
+
+Dispatch the cold, independent `mission-reviewer` crew in parallel via Task. Every reviewer
+receives the absolute `<mission-root>`, the absolute readiness-rubric path, the absolute P7
+manifest path, and its criterion scope:
+
+- ★1 Completeness + ★5 Traceability;
+- ★2 Consistency + ★3 Seam Ownership;
+- ★4 Verifiability + ★6 Evidence Honesty;
+- ★7 Security Posture (adversarial);
+- an independent adversarial double-pass over ★2 Consistency + ★7 Security Posture.
+
+Each reviewer reads every manifested planning artifact needed by its procedures and returns
+per-criterion PASS/FAIL with a cited excerpt; a FAIL also includes the exact defect locus,
+offending token/value, and yes-if condition. No sub-reviewer computes the seven-★ verdict.
+**Fold (computed, not chosen):** union all findings; a ★ criterion FAILS when ANY reviewer
+covering it returns a valid FAIL; never downgrade a reviewer FAIL to PASS. Persist the Claude
+result to `planning-reviews/p7-claude-readiness-r<NN>.md`. If parallel Task dispatch is
+unavailable, fall back to one full-pass `mission-reviewer` plus the ★2+★7 adversarial pass.
+
+If the Claude-side verdict is not `Ready`, do NOT dispatch Sol for this round. Set
+`status: needs_revision` or `status: blocked` as required, apply only repairs within the
+repair-authority rule below, then begin a new round on a new manifest.
+
+### 3. Run the Sol HIGH gate
+
+Only after the Claude-side verdict is `Ready`, dispatch
+`/codex:rescue --model gpt-5.6-sol --effort high --wait <prompt>` with role
+`independent MNFS mission-readiness reviewer` plus the mandatory prompt fields from
+`## Dual-Model Planning — Sol Touchpoints`.
+
+Sol MUST run the complete ★1–★7 rubric and all should-meet checks. Mandatory read order:
+(1) input manifest + readiness rubric; (2) `mission.md`, mission validation contract,
+architecture map, P3/P5 reconciliations; (3) shared interface contracts; (4) milestones in DAG
+order, each with its validation contract; (5) feature briefs under each milestone; (6) research
+notes cited by decisions, then an unread/orphan-path sweep across the entire manifest. Its
+response MUST list every checked path. If it cannot inspect the complete manifest, it returns
+`Blocked: review incomplete`, never a sampled PASS.
+
+Persist Sol stdout verbatim to `planning-reviews/p7-sol-readiness-r<NN>.md`. A Sol FAIL is
+valid only when it names the criterion, cited excerpt, exact defect locus and offending
+token/value, and a yes-if grounded in approved scope or an existing contract. A malformed or
+incomplete review is not PASS or FAIL: retry once in the same round; if no valid Sol review can
+be obtained, apply the failure/skip rule (blocked + escalate — never skip to `planned`).
+
+### 4. Compute the joint verdict
+
+The joint verdict is computed, never chosen:
+
+- Claude `Ready` AND Sol `Ready` on the same manifest digest => `Ready`;
+- any valid ★ FAIL from either side => `Needs revision`;
+- missing required artifacts, incomplete review coverage, unavailable mandatory reviewer, or
+  mutually incompatible yes-if conditions => `Blocked`;
+- should-meet findings remain advisory and never flip the verdict alone.
+
+Persist the joint fold to `<mission-root>/readiness-review.md`: round, manifest digest, Claude
+artifact + verdict, Sol artifact + verdict, union of blocking findings, repair disposition,
+computed joint verdict.
+
+### 5. Repair and re-gate
+
+Auto-apply only local repairs that preserve approved outcome, scope, architecture, contracts,
+milestone boundaries, and risk acceptance. Any repair requiring a new owner decision, changing
+those boundaries, or attempting to satisfy incompatible reviewer conditions sets
+`status: blocked` and escalates to the operator. Route un-automatable evidence findings (e.g.
+unverified research) to `external-researcher`.
+
+Any manifested source change invalidates BOTH model-side verdicts: re-run the author pre-check,
+create a new manifest, dispatch a fresh Claude crew, and — only after Claude is Ready — a fresh
+Sol HIGH review. Cap P7 at three frozen-manifest rounds (a round begins when its manifest is
+created; a Claude-side failure counts as a round even when Sol is not dispatched). After three
+non-Ready rounds, persist `status: blocked` and escalate all remaining yes-if conditions.
+
+Persist mission status only from the joint verdict: joint `Ready` => `status: planned`; joint
+`Needs revision` => `status: needs_revision`; joint `Blocked` => `status: blocked`.
 
 ## Domain Capability Scan
 
@@ -218,7 +369,7 @@ Persist readiness in the mission artifact:
 - Ask only when a missing owner decision blocks planning quality.
 - Do not invent codebase state.
 - Do not hand off until the readiness review passes.
-- QA Validator owns post-execution validation verdicts; the independent `mission-reviewer` owns the planning-readiness verdict (dispatched at P7). The planning session prepares artifacts and applies revisions, but does not self-grade the readiness gate.
+- QA Validator owns post-execution validation verdicts; the planning-readiness verdict at P7 is a joint dual-model gate — the cold Claude `mission-reviewer` crew AND the Sol HIGH readiness gate review the same frozen manifest, and the verdict is COMPUTED from both sides (see `## P7 Dual-Model Readiness Gate`), never chosen. The planning session prepares artifacts and applies revisions, but does not self-grade the readiness gate.
 
 ## Dry-Run Reporting
 
@@ -226,7 +377,7 @@ Report by current phase. Never emit a later phase's content early.
 
 - **P1 dry-run** — Mode / Write now / Mission path; new vs resumed mission with concrete path; intake summary; the P1a domain capability menu (lean-core preselected) then the P1b clarification interview, then the P1c quality-attribute menu (baseline preselected); `Planning BLOCKED pending answers`; the evidence-path convention. Do NOT emit a milestone split, feature density, or interface contract.
 - **P3 dry-run** — resolved-semantics recap; architecture spine as ADR-lite entries; milestone headlines with order and dependencies; research summary; `Awaiting scope approval`. Do NOT emit feature briefs or full contracts.
-- **P7 dry-run** — full proposal: shared interface contract(s); milestone bodies; feature density by boundary type (API/data -> Inputs/Outputs; invalid-path -> Negative Scenarios; UI -> State/Interaction Model); validation contracts; the `architecture-map.md` views when the diagram trigger holds; the readiness verdict sourced from the independent `mission-reviewer` (`readiness-review.md`) with the failing/auto-revised criteria and rounds used.
+- **P7 dry-run** — full proposal: shared interface contract(s); milestone bodies; feature density by boundary type (API/data -> Inputs/Outputs; invalid-path -> Negative Scenarios; UI -> State/Interaction Model); validation contracts; the `architecture-map.md` views when the diagram trigger holds; the joint dual-model readiness verdict (Claude crew + Sol HIGH, `readiness-review.md` + `planning-reviews/p7-*-r<NN>.md`) with the round count, frozen-manifest digest, and the failing/auto-revised criteria.
 
 Evidence-path convention (state in every phase):
 - feature execution evidence -> `<feature-root>/validation.md`

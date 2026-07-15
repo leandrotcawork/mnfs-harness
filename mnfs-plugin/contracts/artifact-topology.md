@@ -18,6 +18,19 @@ Canonical path conventions for MNFS missions. Resolve every artifact path from h
   research/
     <topic>.md
     <topic>-interface-contract.md
+  readiness-review.md
+  planning-reviews/
+    p3-input-r<NN>.sha256
+    p3-claude-candidate-r<NN>.md
+    p3-sol-counterproposal-r<NN>.md
+    p3-reconciliation-r<NN>.md
+    p5-input-r<NN>.sha256
+    p5-sol-decomposition-audit-r<NN>.md
+    p5-reconciliation-r<NN>.md
+    p7-input-r<NN>.sha256
+    p7-claude-readiness-r<NN>.md
+    p7-sol-readiness-r<NN>.md
+    sol-unavailable-<phase>-r<NN>.md   # only when a mandatory Sol review could not be obtained
   M-<nn>-<slug>/
     milestone.md
     validation-contract.md

@@ -20,6 +20,9 @@ through unvalidated).
 | Implement worker (complex) | `/codex:rescue --model gpt-5.6-sol --effort low --wait <prompt>` |
 | Investigator / bulk reads | `/codex:rescue --model gpt-5.6-luna --effort medium --wait <prompt>` |
 | Gate review (GPT side of dual gate) | `/codex:rescue --model gpt-5.6-sol --effort medium --wait <prompt>` |
+| Mission co-planner (planning P3, blind counter-proposal) | `/codex:rescue --model gpt-5.6-sol --effort medium --wait <prompt>` |
+| Mission decomposition auditor (planning P5) | `/codex:rescue --model gpt-5.6-sol --effort medium --wait <prompt>` |
+| Mission readiness gate (planning P7, full-tree) | `/codex:rescue --model gpt-5.6-sol --effort high --wait <prompt>` |
 
 Complex = state machines, pollers, envelope gates, tricky SQL — flagged in the plan's slice
 cards, not decided ad hoc at implement time.
