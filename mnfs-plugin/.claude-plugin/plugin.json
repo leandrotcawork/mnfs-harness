@@ -19,12 +19,10 @@
     "./commands"
   ],
   "agents": [
-    "./agents/architecture-analyst.md",
     "./agents/codebase-investigator.md",
     "./agents/correction-worker.md",
     "./agents/external-researcher.md",
     "./agents/feature-implementer.md",
-    "./agents/improvement-analyst.md",
     "./agents/milestone-orchestrator.md",
     "./agents/milestone-reviewer.md",
     "./agents/mission-planner.md",

@@ -6,6 +6,10 @@ allowed-tools: Read, Glob, Grep, LS, Write, Edit, Task
 
 # MNFS Feature Context
 
+> **Optional escape hatch.** `/milestone-start`'s orchestration loop already builds this same
+> context pack automatically for every feature it dispatches (milestone-execution skill, step 7).
+> Invoke this command only to inspect or manually intervene in one feature's handoff.
+
 Use the Task tool to launch the `milestone-orchestrator` plugin agent. Provide this command body, `$ARGUMENTS`, and the `feature-context-pack` skill workflow as the work instructions. If Task or the plugin agent is unavailable, state that fallback explicitly and execute the same Milestone Orchestrator handoff-preparation role in the main session.
 Treat runtime artifact paths as mission/workspace paths supplied by `$ARGUMENTS`. Treat package paths as relative to the plugin root (`mnfs-plugin/`) only when this command names package-owned files.
 

@@ -96,12 +96,10 @@ If Task or the `milestone-reviewer` plugin agent is unavailable, state the fallb
 
 ## Runtime Rules
 
-- issue exactly one folded verdict: Pass, Fail, or Blocked;
-- missing required evidence blocks advancement;
-- a load-bearing criterion proven only by `assumed` or `could-not-run` evidence FAILS — never Pass;
-- when validation fails, report the folded blocking failures with defect loci and recommended correction scope;
-- the gate may recommend correction scope but must not execute corrections;
-- retry fields may be read and reported, but correction dispatch belongs to Milestone Orchestrator.
+The `validation` skill's Hard Limits bind (one folded verdict; missing evidence blocks;
+`assumed`/`could-not-run` never proves a load-bearing criterion; gate recommends correction
+scope but never executes corrections; correction dispatch belongs to Milestone Orchestrator)
+— apply them from the skill, not restated here.
 
 ## Persist Always, Transition On Apply
 

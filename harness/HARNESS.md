@@ -20,7 +20,7 @@ field findings from that program carry over where marked.
 | **Implement worker (complex)** | **GPT-5.6 Sol, low reasoning** via `/codex:rescue` | Complex slices (state machines, poller, envelope gates, tricky SQL) | — |
 | **Investigator / bulk reads** | **GPT-5.6 Luna, medium reasoning** via codex subagent (default); `caveman:cavecrew-investigator` (haiku) allowed for trivial repo greps | Find files, read/summarize, return compressed report — offloads Opus context AND Claude quota | Suggesting fixes beyond the report |
 | **Per-slice reviewer** | Independent Claude reviewer subagent (sonnet / cavecrew-reviewer) | Reviews each slice before the next starts; implementer ≠ reviewer, always | Generating new scope |
-| **Final dual gate** | **Full Opus review + GPT-5.6 Sol medium review** (both independent, same fixed SHA) | Milestone-end diff review; `CLOSED` only when BOTH clear; disagreements reconciled in the CLOSED event, never dropped | — |
+| **Final dual gate** | **Full Opus review + GPT-5.6 Sol medium review** (both independent, same fixed SHA) | Milestone-end diff review per §4 obligation 4 (canonical statement) | — |
 | **QA persona** | Fresh session/agent, zero inherited context, browser tools | Milestone-close validation as a USER (mission VC Drive blocks); curl-only = FAIL | Reading implementation diffs first; fixing |
 | **Mechanical** | Haiku subagent | Renames, comment sweeps, format-only | Judgment work |
 
@@ -30,6 +30,8 @@ Concurrency: bounded by operator attention (chips) + ≤15 workers per session. 
 `/codex:rescue --model <m> --effort <e> --wait` (companion runtime handles result-handling, resume
 threading, and stdout-verbatim capture for the dispatch ledger; `--wait` = foreground = SYNC).
 Raw `codex exec` is permitted ONLY for the one-off codex precondition probe.
+Role → exact flags: use `.agents/skills/codex-dispatch` — never retype the matrix from memory,
+and NEVER omit `--effort` (global codex default is `xhigh`: silently slower/costlier).
 
 **Codex precondition:** before the first codex-dependent dispatch, hub verifies `codex exec`
 works on this machine (MetalDocs field finding 2026-07-14: Windows sandbox can be broken
@@ -58,8 +60,7 @@ P3 IMPLEMENT per slice: codex worker (Luna high standard / Sol low complex) — 
              first, green, commit per green slice on the worktree branch
 P4 REVIEW    per slice: independent Claude reviewer BEFORE next slice (anti-slop checklist §4)
 P5 VERIFY    ladder L0→L2 (§5) from clean state, run by the milestone session
-P6 DUAL GATE full Opus review + GPT-5.6 Sol medium review on the milestone diff at fixed SHA;
-             both must clear; reconciliation travels in the CLOSED event
+P6 DUAL GATE per §4 obligation 4 (canonical): Opus + Sol medium on the fixed-SHA diff
 P7 QA        fresh browser QA persona drives the milestone VC Drive blocks; verdict artifact
              at <milestone-root>/validation-result.md (only QA passes a milestone)
 P8 CLOSE     evidence per feature at F-*/validation.md; dispatch ledger; CLOSED event to hub
@@ -93,7 +94,8 @@ briefs, owning ICs) and accepted base SHA; (g) its collision-matrix ownership (e
 contract-lock status); (h) skill pin: "the binding harness is docs/superpowers/HARNESS.md +
 `.agents/skills/harness-worker`; NEVER invoke `mpc-goal-harness` (superseded 2026-07-15)" —
 propagated verbatim into every nested worker dispatch (field finding: worker skill-discovery
-auto-resolved to the stale skill; `.claude/skills/` is gitignored so worktrees never see it).
+auto-resolved to a stale skill — never rely on on-disk skill discovery in worktrees; the pin
+travels verbatim in every dispatch prompt).
 
 **Remediation is a message, not a new chip:** ACCEPT-WITH-CONDITIONS / REJECT findings go back to
 the same milestone session; new corrective dispatch only on 2× reject.

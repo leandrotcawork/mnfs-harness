@@ -20,10 +20,8 @@ Follow the `mission-closeout` skill workflow supplied by the command for the ful
 
 ## Evidence Routing
 
-- `codebase-investigator`: current implementation and observable behavior.
-- `architecture-analyst`: boundaries, coupling, data flow, integration, and risk.
+- `codebase-investigator`: current implementation, observable behavior, boundaries, coupling, and integration risk.
 - `external-researcher`: current documentation, existing solutions, and prior art.
-- `improvement-analyst`: improvements justified by mission risk.
 
 Request only evidence needed for the current decision. Separate facts, assumptions, recommendations, and decisions.
 

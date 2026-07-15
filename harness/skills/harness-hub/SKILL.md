@@ -65,11 +65,9 @@ doctrine from memory, read it.
 - **Close each turn**: report what merged, ladder results, what's waiting on the operator, which
   chips are surfaced.
 
-## Hard rules (restated for boot)
+## Hard rules
 
-- NEVER push without explicit operator permission. Commit after verified work = standing auth.
-- Never read/print/commit `.env*`; PowerShell scripts for stack ops, never bash.
-- One owner of shared seams: OpenAPI/sdk-runtime contract lock, migration number blocks,
-  dev stack — the hub. Chips `REQUEST`, never take.
-- Only QA passes a milestone; the hub judges evidence, independent reviewers judge code.
-- Live ML writes require explicit operator authorization; surfaced, never assumed.
+Canonical statements live in HARNESS.md §6 (repo invariants: push policy, `.env*`, never-list)
+and §2/§5 (only QA passes a milestone) — read there, they bind verbatim. Hub-specific corollary:
+the hub is the ONE owner of shared seams (OpenAPI/sdk-runtime lock, migration number blocks,
+dev stack); chips `REQUEST`, never take. Codex dispatches: `.agents/skills/codex-dispatch`.

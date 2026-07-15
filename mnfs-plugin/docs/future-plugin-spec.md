@@ -1,5 +1,10 @@
 # Future Plugin/Skill Architecture
 
+> **STATUS: ASPIRACIONAL — NOT the shipped surface.** This spec describes a possible future
+> architecture. Where it disagrees with the actual `commands/`, `skills/`, `agents/` trees
+> (e.g. it lists agents that no longer exist), the shipped trees win. Do not use this file to
+> learn how the plugin works today.
+
 ## Purpose
 
 This document defines a future MNFS plugin and skill architecture. It is a target architecture only: it does not create a plugin, install skills, or introduce executable automation.
