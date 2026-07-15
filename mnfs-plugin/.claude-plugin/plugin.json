@@ -20,12 +20,8 @@
   ],
   "agents": [
     "./agents/codebase-investigator.md",
-    "./agents/correction-worker.md",
     "./agents/external-researcher.md",
-    "./agents/feature-implementer.md",
-    "./agents/milestone-orchestrator.md",
     "./agents/milestone-reviewer.md",
-    "./agents/mission-planner.md",
     "./agents/mission-reviewer.md",
     "./agents/mission-strategist.md",
     "./agents/qa-validator.md"

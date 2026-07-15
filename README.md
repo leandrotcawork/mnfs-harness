@@ -1,16 +1,16 @@
 # mnfs-harness
 
-Casa única de duas peças que funcionam como um sistema só:
+Um sistema de desenvolvimento com IA em duas camadas que funcionam juntas:
 
-1. **`mnfs-plugin/`** — o plugin **mnfs-workflow** para Claude Code: planejamento e execução
-   de trabalho em três níveis — **Missão → Milestone → Feature** — com gates de qualidade,
-   evidência obrigatória e artefatos restartáveis em disco.
-2. **`harness/`** — a doutrina **hub-and-chips**: como sessões de IA (Claude + Codex/GPT)
-   executam esses milestones em paralelo com qualidade — quem roda o quê, com qual modelo,
-   com qual evidência.
+- **MNFS** (`mnfs-plugin/`) — plugin Claude Code de **planejamento**: transforma um objetivo em
+  Missão → Milestones → Features com arquitetura decidida, contratos de interface, contratos de
+  validação e evidência obrigatória — tudo em arquivos restartáveis sob `.mnfs/`.
+- **Harness hub-and-chips** (`harness/`) — a camada de **execução**: um hub orquestrador +
+  sessões-chip por milestone + workers GPT/Claude executam o que o MNFS planejou, em paralelo,
+  com gates de qualidade.
 
-O plugin planeja; o harness executa. Os dois compartilham o mesmo princípio: **evidência não
-escrita = não aconteceu**.
+Na prática você usa **um comando para planejar e uma frase para executar**. O resto o sistema
+coordena sozinho. Princípio compartilhado: **evidência não escrita = não aconteceu**.
 
 ---
 
@@ -18,16 +18,21 @@ escrita = não aconteceu**.
 
 ```
 mnfs-plugin/          plugin Claude Code (marketplace "mnfs-local") — SOURCE OF TRUTH
-  commands/           9 slash commands (/mission-init, /milestone-start, ...)
-  skills/             8 skills (protocolos: mission-planning, milestone-execution, ...)
-  agents/             10 agents (feature-implementer, qa-validator, reviewers frios, ...)
+  commands/           slash commands: /mission-init, /status, e os GATES
+                      (/milestone-validate, /correction-create, /mission-validate,
+                      /mission-closeout) — invocados PELO harness, não por você
+  skills/             skills (protocolos: mission-planning, validation, mission-closeout)
+  agents/             agents de planejamento e veredito (reviewers frios, qa-validator,
+                      investigadores) — a execução é 100% do harness
   contracts/          topologia canônica de artefatos (.mnfs/MIS-*/M-*/F-*)
   scripts/            status-integrity.sh (gate de integridade), sync-shared-references.sh
-  docs/               documentação de design (future-plugin-spec.md = ASPIRACIONAL, não é o shipped)
+  docs/               4 referências de runtime (shared-standards, state-model,
+                      validation-system, file-contracts — carregadas por skills)
 harness/              doutrina hub-and-chips (template canônico)
   HARNESS.md          a doutrina completa (§1 matriz de modelos ... §8 handoff)
   skills/harness-hub/     skill que boota a sessão HUB (orquestrador)
-  skills/harness-worker/  skill de regras para qualquer sessão despachada
+  skills/harness-worker/  regras para qualquer sessão despachada
+  skills/codex-dispatch/  papel → flags exatas de /codex:rescue
 ```
 
 **Regra de binding:** dentro de um repositório de produto (ex.: `marketplace-central`), o
@@ -43,168 +48,166 @@ Pré-requisitos:
 
 - **Claude Code** (CLI ou desktop).
 - **Codex CLI** (`npm install -g @openai/codex`) + plugin `openai-codex` do Claude Code —
-  necessário para os workers GPT (rode `/codex:setup` uma vez para verificar auth/sandbox).
-- **`agent-browser@0.29.1` global** — sem ele o gate de validação live-UI de milestones com
-  superfície de usuário retorna `Blocked` (isso não é bug: é falta do pré-requisito).
+  os workers GPT rodam nele (rode `/codex:setup` uma vez para verificar auth/sandbox).
+- **`agent-browser@0.29.1` global** — sem ele a validação live-UI de milestones com superfície
+  de usuário retorna `Blocked` (não é bug: é falta do pré-requisito).
 
-Plugin: este repo entra como marketplace de diretório. No `known_marketplaces.json` do Claude
-Code (`~/.claude/plugins/known_marketplaces.json`), a entrada `mnfs-local` aponta para
+Plugin: este repo entra como marketplace de diretório. No
+`~/.claude/plugins/known_marketplaces.json`, a entrada `mnfs-local` aponta para
 `<este-repo>/mnfs-plugin`. Editou o plugin aqui? Sincronize os arquivos alterados para o cache
-(`~/.claude/plugins/cache/mnfs-local/mnfs-workflow/<versão>/`) ou reinstale, senão as sessões
-vivas continuam vendo a versão velha.
+(`~/.claude/plugins/cache/mnfs-local/mnfs-workflow/<versão>/`) ou reinstale — o cache é derivado.
+
+No repo de produto: copie `harness/HARNESS.md` para `docs/superpowers/HARNESS.md`, a skill
+`harness-worker` + `codex-dispatch` para `.agents/skills/` (tracked, workers em worktree
+precisam ver), e `harness-hub` para `.claude/skills/`.
 
 ---
 
-## Parte 1 — MNFS: planejar e executar missões
+## Como se usa de verdade (a jornada completa)
 
-### O modelo mental
-
-- **Missão** (`MIS-nn`): um objetivo de produto com arquitetura decidida, contratos de
-  interface e uma fila de milestones. Vive em `.mnfs/MIS-nn-slug/mission.md`.
-- **Milestone** (`M-nn`): uma fatia de engenharia coerente com resultado observável, superfícies
-  exclusivas (Ownership & Concurrency) e contrato de validação próprio.
-- **Feature** (`F-nn`): unidade do tamanho de um worker — brief denso o bastante para uma sessão
-  fresca implementar sem reinventar decisões (spec → plan → código → validação).
-
-Todo estado vive em arquivos sob `.mnfs/` — qualquer sessão nova retoma do disco, nunca de
-memória de chat. Planejamento é **parallel-first**: a missão declara o DAG de dependências e a
-matriz de ownership (arquivos, seções OpenAPI, blocos de migration, superfície FE, tabelas DB)
-para que milestones independentes rodem simultaneamente.
-
-### Quickstart — uma missão do zero ao fim
+### Passo 1 — Planejar: `/mission-init`
 
 ```
-/mission-init "<objetivo>"                       # P0-P7: entrevistas de clarificação (você
-                                                  #   responde menus/perguntas), escopo, decomposição,
-                                                  #   revisão de prontidão por crew independente
-/mission-init <mission-path> --apply              # persiste (sem --apply é TUDO dry-run!)
-
-# por milestone, na ordem do DAG:
-/milestone-start <mission-path> M-01 --apply      # orquestra: despacha features, aceita/rejeita
-/milestone-validate <milestone-path> --apply      # gate frio independente + QA + live-drive
-#   falhou? → /correction-create <milestone-path> <report> --apply → revalidar
-
-# fechamento:
-/mission-validate <mission-path> --apply          # veredito QA da missão
-/mission-closeout <mission-path> --apply          # consolida evidência e encerra
-
-/status <path>                                    # qualquer momento: status + scan de integridade
+/mission-init "<seu objetivo>"          # entrevista guiada: escopo, capacidades, arquitetura,
+                                         #   qualidade — você responde menus e perguntas
+/mission-init <mission-path> --apply     # persiste (sem --apply é tudo dry-run!)
 ```
 
-### As 5 pegadinhas de quem está começando
+O planning roda um protocolo com gates (P0–P7): clarificação → pesquisa → aprovação de escopo →
+decomposição **parallel-first** (DAG de dependências + matriz de ownership por milestone:
+arquivos, seções OpenAPI, blocos de migration, superfície FE, tabelas DB) → contratos de
+validação → revisão de prontidão por uma crew de reviewers frios independentes.
 
-1. **`--apply` em todo comando que muta.** Sem ele, tudo é dry-run — o comando relata o que
-   FARIA e não escreve nada. Primeira vez sempre dry-run (leia o report), depois `--apply`.
-2. **Paths são argumentos.** Você retipa `.mnfs/MIS-nn-slug` / `M-nn-slug` nos comandos
-   seguintes — copie do report anterior, não invente.
-3. **Gates não se auto-disparam.** `/milestone-start` terminar NÃO valida o milestone; você
-   invoca `/milestone-validate` em seguida. Idem `/mission-validate` e `/mission-closeout`.
-4. **`/feature-context` e `/feature-accept` são opcionais** — escape hatches para inspecionar
-   ou intervir manualmente em UMA feature. O loop do `/milestone-start` já faz os dois
-   automaticamente.
-5. **Só QA passa um milestone.** Orquestrador aceita features; o veredito do milestone vem do
-   gate frio (`/milestone-validate`), nunca da própria sessão que implementou.
+Sai disso: `.mnfs/MIS-nn-slug/` com `mission.md` (incl. `## Parallel Execution Plan`),
+`M-nn/milestone.md` (incl. `## Ownership & Concurrency`), briefs de feature e
+`validation-contract.md` por nível. Isso é o **contrato de execução** — a única interface entre
+as duas camadas.
 
-### Papéis (quem é quem)
+### Passo 2 — Executar: bootar o HUB e deixar o harness coordenar
 
-| Agente | Papel |
-|---|---|
-| `mission-reviewer` / `milestone-reviewer` | revisores FRIOS, read-only, rubrica binária — o gate de prontidão (P7) e o gate de milestone |
-| `qa-validator` | dono dos vereditos formais (missão/feature) + corroboração live |
-| `milestone-orchestrator` | coordena um milestone: despacho, aceite, correção |
-| `feature-implementer` | executa UMA feature em sessão fresca (spec → plan → código → validação) |
-| `correction-worker` | conserta UMA falha de validação com escopo travado |
-| `codebase-investigator` / `external-researcher` | evidência de repo / pesquisa externa citada |
-| `mission-strategist` | autoridade macro + closeout |
-| `mission-planner` | atalho de CLI (`claude --agent mnfs-workflow:mission-planner`) — mesmo protocolo do `/mission-init`, persona dedicada |
+Abra uma sessão no repo de produto e diga **"assume o controle"** (ou invoque a skill
+`harness-hub`). A partir daí o harness abstrai a execução inteira:
 
----
+1. O hub lê a missão, monta a matriz de colisão a partir do `Parallel Execution Plan` e autora
+   um **chip** por milestone acionável (aparece como card de task — você lança com um clique,
+   em Opus).
+2. Cada chip, num git worktree isolado, roda o loop P1–P8 sozinho: board de tasks → planos GPT
+   em batch → implementação por slice com teste falhando primeiro (workers GPT) → revisão
+   independente por slice → escada de verificação L0–L2 → **dual gate** (revisão Opus completa
+   + revisão GPT, mesmo SHA fixo) → **gate MNFS de milestone**: o chip roda
+   `/milestone-validate --apply` (crew fria de reviewers + QA com live-drive de browser — só QA
+   passa milestone; falhou → `/correction-create` escopa e o chip despacha o worker corretivo)
+   → evidência nos paths do contrato (`validation-result.md`, `F-*/validation.md`, ledger).
+3. O chip devolve `CLOSED` (ou `BLOCKED`/`REQUEST`/`ESCALATION`); o hub aceita, faz merge
+   `--no-ff`, roda a escada pós-merge no master integrado, sobe o dev stack e autora os
+   próximos chips pelo DAG — milestones independentes rodam **em paralelo**. Todos os
+   milestones fechados → o hub roda `/mission-validate` e `/mission-closeout`.
 
-## Parte 2 — Harness hub-and-chips: execução paralela com qualidade
+### Seu papel de operador (só isto)
 
-Doutrina completa em [harness/HARNESS.md](harness/HARNESS.md). Resumo operacional:
+- Lançar cada chip quando o hub o surfar (1 clique).
+- Responder escalações/decisões que o hub não pode tomar (perguntas objetivas via menu).
+- Autorizar o que é gate humano por design: push, mudança de dependência, escrita live em ML.
+- `/status <path>` quando quiser ver o quadro (status + scan de integridade dos artefatos).
 
-### A topologia
+Você NÃO digita comandos de execução por milestone — o hub e os chips fazem isso.
 
-- **HUB** (uma sessão permanente, boota com a skill `harness-hub`): dona do merge, do deploy,
-  dos seams compartilhados (lock de OpenAPI, blocos de número de migration, dev stack). Autora
-  os "chips" e adjudica paralelismo pela matriz de colisão.
-- **CHIPS** (uma sessão Opus por milestone, em git worktree isolado): orquestram UM milestone
-  fim-a-fim e falam com o hub SÓ por eventos: `CLOSED`, `BLOCKED`, `ESCALATION`, `REQUEST`,
-  `SPLIT-REQUEST`, `ACK`.
-- **Workers** (GPT via codex, subagents Claude): planejam, implementam, revisam, investigam —
-  despachados pelo chip, nunca tocam infra compartilhada.
+### Como as duas camadas se encaixam (fluxo único, sem fallback)
 
-### O loop por milestone (P1–P8)
-
-Board de tasks → plano em batch (GPT Sol medium) → implementação por slice com teste falhando
-primeiro (GPT Luna high / Sol low) → revisão independente POR slice → escada de verificação
-L0–L2 → **dual gate** (revisão Opus completa + revisão GPT Sol medium, no mesmo SHA fixo,
-ambas limpas) → **QA de browser fresco** (só QA passa milestone) → `CLOSED` com evidência.
-O hub então: aceita → merge `--no-ff` → escada pós-merge no master integrado → deploy → próximo
-chip pelo DAG.
-
-### Regras que não se negociam
-
-Um escritor por seam compartilhado. OpenAPI + SDK no mesmo commit. Números de migration são
-grants pré-alocados. Desconhecido ≠ zero (fail honest). Nunca: push sem permissão do operador,
-reset/revert/stash/clean, ler `.env*`, instalar dependência como ritual. Checklist anti-slop
-com REJECT automático (abstração especulativa, comentário narrando, try-catch cobertor em
-leitura de integridade, test theater).
+O MNFS define **o que** é feito, **o que prova** que foi feito e **quem dá o veredito**
+(briefs, contratos de validação, rubrica binária, crew fria de reviewers, QA com live-drive).
+O harness define **quem executa e como** (hub, chips, workers GPT, dual gate). Não existem
+duas engines: em 2026-07-15 a camada de execução própria do plugin (agents
+milestone-orchestrator / feature-implementer / correction-worker e os comandos
+/milestone-start, /feature-context, /feature-accept) foi **removida** — o harness é a única
+engine, e nos gates ele invoca a máquina de veredito do MNFS (`/milestone-validate`,
+`/correction-create`, `/mission-validate`, `/mission-closeout`). Onde um artefato MNFS nomeia
+"Milestone Orchestrator" / "Feature Implementer" / "Correction Worker", leia: chip / worker de
+implementação / worker corretivo do harness (binding canônico em
+`mnfs-plugin/docs/shared-standards.md` § Role Binding).
 
 ---
 
-## Parte 3 — Painel Codex (os workers GPT)
+## Papéis (quem é quem no sistema)
 
-Os workers de planejamento/implementação/investigação rodam no **Codex CLI** via plugin
-`openai-codex`. Interface, na prática, são 5 comandos:
+| Papel | Onde vive | Faz |
+|---|---|---|
+| HUB | sessão permanente (skill `harness-hub`) | autora chips, adjudica paralelismo, aceita, merge, deploy |
+| Chip de milestone | sessão Opus em worktree | orquestra UM milestone fim-a-fim, emite eventos |
+| Workers GPT | Codex via `/codex:rescue` | planejam features, implementam slices, investigam |
+| Reviewer por slice | subagent Claude independente | revisa cada slice antes da próxima (implementer ≠ reviewer) |
+| Dual gate | Opus + GPT, mesmo SHA | revisão final do diff do milestone, ambos devem limpar |
+| Gate de milestone | `/milestone-validate` (chip invoca) | crew fria `milestone-reviewer` + `qa-validator` com live-drive de browser — só QA passa |
+| `mission-reviewer` (MNFS) | crew fria no planning P7 | gate de prontidão do plano, rubrica binária ★1–★7 |
+| Gate de missão | `/mission-validate` + `/mission-closeout` (hub invoca) | veredito QA da missão e encerramento com evidência |
+
+---
+
+## Painel Codex (os workers GPT)
+
+Interface prática — 5 comandos:
 
 | Comando | Uso |
 |---|---|
-| `/codex:rescue --model <m> --effort <e> --wait <prompt>` | despachar QUALQUER trabalho GPT (o caminho padrão) |
-| `/codex:status [job-id]` | ver jobs ativos/recentes |
-| `/codex:result [job-id]` | saída final de um job terminado, verbatim |
-| `/codex:cancel [job-id]` | cancelar job em background |
-| `/codex:setup` | verificar/instalar CLI + auth (rodar 1× por máquina) |
+| `/codex:rescue --model <m> --effort <e> --wait <prompt>` | despachar QUALQUER trabalho GPT |
+| `/codex:status [job-id]` | jobs ativos/recentes |
+| `/codex:result [job-id]` | saída final verbatim |
+| `/codex:cancel [job-id]` | cancelar background job |
+| `/codex:setup` | verificar CLI + auth (1× por máquina) |
 
-### Matriz de papéis → flags (NUNCA digite de memória)
+### Papel → flags (NUNCA digite de memória — skill `codex-dispatch`)
 
-A skill `codex-dispatch` (no repo de produto: `.agents/skills/codex-dispatch/`) resolve:
-
-| Papel | Invocação |
+| Papel | Flags |
 |---|---|
 | Planejar feature | `--model gpt-5.6-sol --effort medium --wait` |
 | Implementar (padrão) | `--model gpt-5.6-luna --effort high --wait` |
-| Implementar (complexo: state machine, SQL difícil) | `--model gpt-5.6-sol --effort low --wait` |
+| Implementar (complexo) | `--model gpt-5.6-sol --effort low --wait` |
 | Investigar / leitura em massa | `--model gpt-5.6-luna --effort medium --wait` |
-| Revisão do dual gate (lado GPT) | `--model gpt-5.6-sol --effort medium --wait` |
+| Dual gate (lado GPT) | `--model gpt-5.6-sol --effort medium --wait` |
 
-**Sempre passe `--effort` explícito**: o default global do codex é `xhigh` — esquecer a flag
-não dá erro, só fica silenciosamente mais lento e mais caro.
+**Sempre `--effort` explícito** — o default global do codex é `xhigh`: esquecer a flag não dá
+erro, só fica silenciosamente mais lento e caro.
 
-### Os dois caminhos codex (stdin oposto!)
+**Dois caminhos, stdin oposto:** `/codex:rescue` (padrão, via app-server) nunca trava em stdin.
+`codex exec` cru no shell (só probe de precondição / worker OS-process em background) trava
+PARA SEMPRE em shell não-tty sem stdin fechado: PowerShell `@() | codex exec ...` · bash
+`codex exec ... < /dev/null`. Silêncio ≥2 min = travou, mate e reemita.
 
-1. **`/codex:rescue`** — caminho padrão, via app-server JSON-RPC. Sem risco de travar em stdin.
-2. **`codex exec` cru no shell** — SÓ para o probe de precondição do hub ou workers OS-process
-   em background. Em shell não-tty ele **trava para sempre** esperando stdin fechar:
-   PowerShell `@() | codex exec ...` · bash `codex exec ... < /dev/null`. Silêncio ≥2 min =
-   é o travamento, mate e reemita.
+---
+
+## Referência — comandos de gate (invocados pelo fluxo, não decorados por você)
+
+```
+/mission-init "<objetivo>" [--apply]              # você — planeja a missão
+/status <mission-path>                            # você — quadro + integridade dos artefatos
+/milestone-validate <milestone-path> --apply      # chip, no P7 — gate frio + QA live-drive
+/correction-create <milestone-path> <report> --apply   # chip — escopa correção pós-falha
+/mission-validate <mission-path> --apply          # hub — veredito QA da missão
+/mission-closeout <mission-path> --apply          # hub — consolida evidência e encerra
+```
+
+Pegadinha única que importa: `--apply` em todo comando que muta (senão é dry-run).
 
 ---
 
 ## Contribuindo neste repo
 
-- Editou `mnfs-plugin/`? **Sincronize para o cache** do Claude Code (ou reinstale) — o cache é
+- Editou `mnfs-plugin/`? Sincronize para o cache do Claude Code (ou reinstale) — o cache é
   derivado, este repo é a fonte.
 - Editou um reference card compartilhado entre skills? Rode
-  `mnfs-plugin/scripts/sync-shared-references.sh --check` (os cards são cópias byte-idênticas
-  por design; o manifest lista os grupos).
+  `mnfs-plugin/scripts/sync-shared-references.sh --check` (cards são cópias byte-idênticas por
+  design).
 - Melhorou a doutrina do harness? Aplique aqui E no `docs/superpowers/HARNESS.md` do(s) repo(s)
   de produto — os dois andam juntos.
 
 ## Histórico
 
 - 2026-07-15: repo criado (fonte original do plugin perdida; reconstruído do cache vivo).
-  Parallel-first planning adicionado (P5, Parallel Execution Plan, Ownership & Concurrency,
-  rubrica ★3 com auditoria de disjunção em 6 eixos). Análise de sistema: 2 agents órfãos
-  removidos, dedup comando↔skill, skill `codex-dispatch`, este README.
+  Parallel-first planning (P5, Parallel Execution Plan, Ownership & Concurrency, rubrica ★3 com
+  auditoria de disjunção em 6 eixos). Análise de sistema: superfície morta removida, dedup
+  comando↔skill, skill `codex-dispatch`. **Unificação por camadas**: a engine de execução do
+  plugin (milestone-orchestrator, feature-implementer, correction-worker + /milestone-start,
+  /feature-context, /feature-accept + skills de execução) foi removida — harness = única engine;
+  MNFS = contrato + veredito; gates do harness invocam /milestone-validate, /correction-create,
+  /mission-validate, /mission-closeout (Role Binding em docs/shared-standards.md). README
+  reescrito como fluxo único.

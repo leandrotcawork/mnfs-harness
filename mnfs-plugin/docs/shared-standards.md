@@ -178,6 +178,22 @@ Separate:
 
 The independent milestone-reviewer cold crew owns the milestone validation verdict; QA Validator owns the mission validation verdict (and is the fallback single cold pass for the milestone gate). Milestone Orchestrator may accept or reject feature outputs but must not self-approve or self-grade a milestone. Correction Worker fixes only assigned validation failures.
 
+## Role Binding (single execution engine, 2026-07-15)
+
+`Milestone Orchestrator`, `Feature Implementer`, and `Correction Worker` are CONTRACT ROLES,
+not plugin agents — their dedicated agents and commands were removed when the hub-and-chips
+harness became the only execution engine. Runtime binding:
+
+| Contract role | Runtime executor |
+|---|---|
+| Milestone Orchestrator | harness milestone session (chip) |
+| Feature Implementer | harness-dispatched implementation worker |
+| Correction Worker | harness-dispatched corrective worker |
+| Milestone/mission gate, QA Validator, reviewers | unchanged — plugin agents dispatched by `/milestone-validate`, `/mission-validate` |
+
+Wherever an MNFS artifact or doc names one of the first three roles, read it as the harness
+executor above. Obligations attach to the ROLE and bind whoever plays it.
+
 ## Token Budget And Anti-Bloat Rules
 
 - Put shared policy in shared docs, not every command or skill.

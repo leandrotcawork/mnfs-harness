@@ -6,7 +6,7 @@ allowed-tools: Read, Glob, Grep, LS, Write, Edit, MultiEdit, Task
 
 # MNFS Correction Create
 
-Use the Task tool to launch the `milestone-orchestrator` plugin agent. Provide this command body, `$ARGUMENTS`, and the correction-routing portion of the `milestone-execution` skill workflow as the work instructions. If Task or the plugin agent is unavailable, state that fallback explicitly and execute the same Milestone Orchestrator correction-scoping role in the main session.
+Run the correction-scoping role in the CURRENT session (the caller — normally the harness milestone session — owns orchestration). Scope only; the caller dispatches the corrective worker. Correction-task shape: `skills/validation/references/correction-task.md`.
 Treat runtime artifact paths as mission/workspace paths supplied by `$ARGUMENTS`. Treat package paths as relative to the plugin root (`mnfs-plugin/`) only when this command names package-owned files.
 
 ## Inputs
@@ -27,7 +27,7 @@ Treat runtime artifact paths as mission/workspace paths supplied by `$ARGUMENTS`
 - read and update retry state only from `<MILESTONE_PATH>/milestone.md`, and increment or preserve it according to current milestone evidence;
 - never reset retry counters silently;
 - route revalidation back to QA Validator instead of issuing milestone or mission QA verdicts;
-- resuming an interrupted correction: re-running this command re-enters from the persisted `<MILESTONE_PATH>/corrections/correction-task.md` and milestone retry state — read them, do not reset retry counters, and re-dispatch the Correction Worker via Task. There is no standalone Correction Worker command by design; dispatch stays behind this orchestrator scoping.
+- resuming an interrupted correction: re-running this command re-enters from the persisted `<MILESTONE_PATH>/corrections/correction-task.md` and milestone retry state — read them, do not reset retry counters. Execution of the scoped correction belongs to the caller (harness milestone session dispatches its corrective worker); this command only scopes and persists.
 
 ## Dry Run And Apply
 

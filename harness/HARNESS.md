@@ -61,14 +61,26 @@ P3 IMPLEMENT per slice: codex worker (Luna high standard / Sol low complex) — 
 P4 REVIEW    per slice: independent Claude reviewer BEFORE next slice (anti-slop checklist §4)
 P5 VERIFY    ladder L0→L2 (§5) from clean state, run by the milestone session
 P6 DUAL GATE per §4 obligation 4 (canonical): Opus + Sol medium on the fixed-SHA diff
-P7 QA        fresh browser QA persona drives the milestone VC Drive blocks; verdict artifact
-             at <milestone-root>/validation-result.md (only QA passes a milestone)
+P7 QA        MNFS milestone gate: run `/milestone-validate <milestone-path> --apply` — the
+             independent cold `milestone-reviewer` crew + QA live-drive (fresh browser persona
+             on the VC Drive blocks) per the plugin's validation skill; verdict artifact at
+             <milestone-root>/validation-result.md (only QA passes a milestone). Fail →
+             `/correction-create` scopes; the chip dispatches its corrective worker; full
+             re-gate, never-downgrade across rounds
 P8 CLOSE     evidence per feature at F-*/validation.md; dispatch ledger; CLOSED event to hub
   ↓
 HUB          acceptance (verifies dual-gate + QA evidence) → merge --no-ff to master →
              post-merge ladder on integrated master → deploy/rebuild dev stack →
-             worktree remove + branch -d → update .mnfs milestone status → next chip(s)
+             worktree remove + branch -d → update .mnfs milestone status → next chip(s);
+             all milestones CLOSED → /mission-validate then /mission-closeout (hub runs both)
 ```
+
+**Role binding (single execution engine):** MNFS artifacts name contract roles — Milestone
+Orchestrator = the chip, Feature Implementer = the dispatched implementation worker, Correction
+Worker = the dispatched corrective worker. The plugin's own execution agents/commands for these
+roles were deleted 2026-07-15 (`mnfs-plugin/docs/shared-standards.md` § Role Binding); the
+harness is the only execution engine. Gate/verdict agents (`milestone-reviewer`, `qa-validator`,
+`mission-reviewer`) remain plugin-owned, invoked via `/milestone-validate` / `/mission-validate`.
 
 Milestone chips return to the hub ONLY via events (gates/terminal) — not turn-by-turn narration.
 
@@ -190,7 +202,17 @@ theater (asserting the mock; missing negative/cross-tenant case).
 | L1 | `GOCACHE=.gocache go test ./...` (touched packages + guard suites; full sweep only when migrations/platform touched) · web vitest | green; flaky = fix or delete |
 | L2 | dev stack up (server_core :8080 + apps/web :5174 via repo scripts, PowerShell never bash) · smoke: target routes, error shapes, OpenAPI ↔ SDK ↔ handler parity | green, evidence captured |
 | L3 | browser QA persona on the milestone VC Drive blocks | GREEN verdict artifact |
-| L4 | milestone validation vs `validation-contract.md` (only QA passes a milestone) | PASS written to `<milestone-root>/validation-result.md` |
+| L4 | MNFS milestone gate `/milestone-validate <milestone-path> --apply` (cold `milestone-reviewer` crew + QA live-drive vs `validation-contract.md`; only QA passes a milestone) | PASS written to `<milestone-root>/validation-result.md` |
+
+**Fresh-worktree bootstrap (ratified 2026-07-15, M-01 field finding):** the registered
+integration lane runs Go hermetically (`GOPROXY=off`, `GOSUMDB=off`,
+`GOMODCACHE=apps/server_core/.gomodcache`) — a fresh worktree has an empty `.gomodcache`, so
+`go run ./cmd/testdb migrate` fails at BUILD (module lookup disabled) and the lane reports
+`HPG_MIGRATION_FAILED` with `migrations_first=-1` (false alarm, not a SQL/migration defect).
+Standard first act in every new chip worktree before any hermetic lane:
+`cd apps/server_core && GOMODCACHE=$(pwd)/.gomodcache go mod download all` (~130M, env prep —
+NOT a dep change, no REQUEST needed). `migrations_first=-1` means "build died before migrate
+ran"; warm the cache before diagnosing SQL.
 
 **Backend non-negotiables re-checked at L0–L2 per touched endpoint:** tenant_id predicate on
 every query · provider payloads at adapters only · unknown never zero/default (ADR-17) ·

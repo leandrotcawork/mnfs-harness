@@ -1,8 +1,14 @@
 # MNFS Workflow Plugin
 
-MNFS packages the Mission -> Milestone -> Feature workflow for Claude Code.
+MNFS packages the Mission -> Milestone -> Feature CONTRACT + VERDICT layer for Claude Code:
+planning (`/mission-init`), validation gates (`/milestone-validate`, `/mission-validate`),
+correction scoping (`/correction-create`), closeout, and status. Execution is owned by the
+hub-and-chips harness (`../harness/HARNESS.md`), which reads the planning artifacts and invokes
+these gates. The plugin's own execution engine (milestone-orchestrator, feature-implementer,
+correction-worker agents; /milestone-start, /feature-context, /feature-accept) was removed
+2026-07-15 — role binding table in `docs/shared-standards.md` § Role Binding.
 
-This bundle is the Phase 6 standardized MNFS runtime package. It exposes slash commands through the plugin manifest and bundles skills, agent contracts, skill-owned references, and supporting documentation as package material. It does not provide an executable `mnfs` shell CLI, hidden state, deployment automation, or automatic validation verdicts.
+It does not provide an executable `mnfs` shell CLI, hidden state, deployment automation, or automatic validation verdicts.
 
 ## Prerequisites
 
@@ -20,16 +26,12 @@ support is verify-at-install. If `agent-browser` is absent, the gate returns `co
 
 ## Surfaces
 
-- `commands/`: self-contained Claude Code slash-command entrypoints.
-- `skills/`: reusable MNFS workflow methods.
+- `commands/`: planning, status, and gate entrypoints (no execution commands).
+- `skills/`: planning + validation + closeout protocols.
 - `skills/<skill>/references/`: artifact shapes loaded only by the owning skill.
-- `agents/`: runtime role authority, limits, and handoff rules.
-- `docs/`: shared contracts and development reference.
-- `docs/runtime-harness.md`: Claude Code command -> agent -> skill -> artifact -> handoff choreography.
-
-## Standards
-
-Package-wide conventions live in `docs/shared-standards.md`. Commands and skills should stay concise and cite shared docs instead of repeating common policy.
+- `agents/`: planning/research agents and cold gate reviewers (no execution agents).
+- `contracts/`: canonical artifact topology (`.mnfs/MIS-*/M-*/F-*`).
+- `scripts/`: `status-integrity.sh` (integrity gate), `sync-shared-references.sh` (reference-card lockstep).
 
 ## Core Rule
 

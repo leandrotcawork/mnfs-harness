@@ -9,14 +9,8 @@
 # Format: one group per line, space-separated paths relative to mnfs-plugin/.
 # The FIRST path is the canonical source; the rest are synced consumers.
 #
-# Role-specialised variants (feature.md, milestone.md, milestone-validation-contract.md,
+# Role-specialised variants (milestone-validation-contract.md,
 # mission-validation-contract.md) are DIVERGENT BY DESIGN and are deliberately absent.
 
-skills/milestone-execution/references/execution-guide.md skills/feature-context-pack/references/execution-guide.md skills/feature-validation-review/references/execution-guide.md skills/mission-closeout/references/execution-guide.md
-skills/feature-execution/references/feature-validation.md skills/correction-worker/references/feature-validation.md skills/feature-validation-review/references/feature-validation.md skills/milestone-execution/references/feature-validation.md skills/validation/references/feature-validation.md
-skills/milestone-execution/references/blocked-report.md skills/correction-worker/references/blocked-report.md skills/feature-execution/references/blocked-report.md skills/mission-closeout/references/blocked-report.md skills/validation/references/blocked-report.md
-skills/validation/references/milestone-validation-result.md skills/milestone-execution/references/milestone-validation-result.md
+skills/validation/references/blocked-report.md skills/mission-closeout/references/blocked-report.md
 skills/validation/references/mission-validation-result.md skills/mission-closeout/references/mission-validation-result.md
-skills/correction-worker/references/correction-task.md skills/milestone-execution/references/correction-task.md
-skills/feature-execution/references/feature-spec.md skills/correction-worker/references/feature-spec.md
-skills/feature-execution/references/feature-plan.md skills/correction-worker/references/feature-plan.md
