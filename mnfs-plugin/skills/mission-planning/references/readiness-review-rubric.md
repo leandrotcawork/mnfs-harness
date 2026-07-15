@@ -15,8 +15,8 @@ Reference-guided: grade each downstream artifact against its parent brief and th
 - PASS iff: zero divergence across files and with the parent; the Error Matrix covers every feature-returned case; every list operation declares ordering.
 
 ### ★3 Seam Ownership
-- Procedure: enumerate cross-worker seams — route namespace (client + server), transport (cookies incl `sameSite`/`secure`/`httpOnly`, CORS origin, credentials mode, dev proxy), shared mutable files, version/env pins, id/time formats. For each, find the owning IC or ADR.
-- PASS iff: every enumerated seam is owned by an interface contract or ADR.
+- Procedure: enumerate cross-worker seams — route namespace (client + server), transport (cookies incl `sameSite`/`secure`/`httpOnly`, CORS origin, credentials mode, dev proxy), shared mutable files, version/env pins, id/time formats. For each, find the owning IC or ADR. Then audit the concurrency contract: for every pair declared parallel (mission `Parallel Execution Plan` DAG `∥`, milestone `Runs in parallel with`, feature `Parallel-safe with`), verify the two ownership rows are disjoint on all six collision axes (files/modules, OpenAPI sections, migration blocks, FE surface, DB tables, shared seams); verify every predicted shared-seam addition is NAMED as a seam lock; verify every milestone that adds migrations has an explicit pre-allocated block.
+- PASS iff: every enumerated seam is owned by an interface contract or ADR; AND no declared-parallel pair overlaps on any collision axis without a named seam lock; AND no migration-adding milestone lacks an allocated block. A `∥` declaration without a disjointness-provable ownership row is a FAIL at that locus.
 
 ### ★4 Verifiability
 - Procedure: for each acceptance criterion, confirm a command-or-interaction + expected result + named blocking failure + concrete evidence path. Flag any generic-proof wording where a concrete observable is required — "support X", `works`, `correct`, `proper`, `valid`, `handles`, `inline` — and any `Expected:` that names a file location instead of an observable value (status / JSON shape / field values / visible result).

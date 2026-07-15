@@ -88,6 +88,21 @@ Taxon is one of: actor model, lifecycle/transitions, persistence/reset, UI conve
 | ID | Name | System change | Why this order | Path |
 | --- | --- | --- | --- | --- |
 
+## Parallel Execution Plan
+
+Dispatcher-facing concurrency contract, authored in P5. Two parts:
+
+1. Dependency DAG — which milestones can run concurrently (`M-02 ∥ M-03`) and which edges are
+   true data/contract dependencies (name the artifact that forces the edge, e.g. "M-03 consumes
+   M-01 `/listings` read API"). An edge without a named forcing artifact is a defect.
+2. Ownership matrix — one row per milestone, disjointness on the six collision axes:
+
+| Milestone | Files/modules (exclusive) | OpenAPI sections | Migration block (pre-allocated) | FE surface (routes/components) | DB tables/shape | Shared-seam locks predicted |
+| --- | --- | --- | --- | --- | --- | --- |
+
+Declared-parallel milestones MUST have pairwise-disjoint rows; any overlap is either resolved
+by re-splitting or converted into a named predicted seam lock (additive contract-lock pattern).
+
 ## Quality Attributes
 
 Non-functional bars chosen in the P1c scan, one row each. Declined attributes go under

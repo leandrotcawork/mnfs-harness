@@ -55,6 +55,14 @@ lifecycle_scope: feature
 
 ## Constraints
 
+## Ownership
+
+- Owned paths: <files/dirs this feature may create or modify — exclusive during execution>
+- Forbidden paths: <shared seams and other features' surfaces this worker must not touch;
+  need = `REQUEST` to the orchestrator>
+- Parallel-safe with: <F-xx (+ disjoint axis: files / OpenAPI section / migration / FE route /
+  DB table), or `none — depends on F-yy <artifact>`>
+
 ## Validation Expectations
 
 ## Execution Artifact Rules
@@ -87,7 +95,9 @@ lifecycle_scope: feature
 
 ## Validation Check
 
-- Brief, inputs, expected output, constraints, validation expectations, and handoff are filled.
+- Brief, inputs, expected output, constraints, ownership, validation expectations, and handoff are filled.
+- Ownership names concrete owned paths and forbidden paths; `Parallel-safe with` either cites
+  the disjoint axis or names the dependency artifact that forces serialization.
 - Validation expectations name concrete observables (status / shape / field values / visible result), not file locations or generic labels.
 - Boundary-required adapt-in sections are present (Inputs/Outputs, Negative Scenarios, State/Interaction Model as the feature type demands).
 - No contract value is hedged ("X or Y").

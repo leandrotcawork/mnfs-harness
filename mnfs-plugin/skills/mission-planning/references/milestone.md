@@ -56,6 +56,16 @@ lifecycle_scope: milestone
 
 ## Dependencies
 
+## Ownership & Concurrency
+
+- Exclusive surfaces (only this milestone writes): <files/modules, OpenAPI sections, FE routes, DB tables>
+- Migration block: <pre-allocated range or `none`>
+- Predicted seam locks: <shared interfaces this milestone must ADD to — named per the additive
+  contract-lock pattern — or `none`>
+- Runs in parallel with: <milestone IDs from the mission Parallel Execution Plan, or `none`>
+- Internal feature DAG: <F-xx → F-yy edges; mark independent features `F-aa ∥ F-bb` so the
+  orchestrator can dispatch them to concurrent workers>
+
 ## Risks
 
 ## Done Means
@@ -82,6 +92,10 @@ lifecycle_scope: milestone
 - Define the milestone outcome as an observable result.
 - Keep feature rows as briefs, not implementation plans.
 - Name dependencies that affect ordering or parallelization.
+- Fill `Ownership & Concurrency` from the mission Parallel Execution Plan row: exclusive
+  surfaces concrete (paths/sections/tables, not module names alone), migration block explicit
+  (`none` counts), predicted seam locks named, internal feature DAG with `∥` marks where
+  features are worker-independent.
 - Keep correction handoff empty or marked not applicable during initial planning.
 
 ## Anti-Bloat Boundary
