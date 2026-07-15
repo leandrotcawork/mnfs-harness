@@ -1,0 +1,35 @@
+{
+  "name": "mnfs-workflow",
+  "version": "0.1.0",
+  "description": "Mission, Milestone, Feature workflow guidance for scoped implementation, validation, and handoff.",
+  "author": {
+    "name": "MNFS workflow authors"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "workflow",
+    "planning",
+    "validation",
+    "agents",
+    "missions",
+    "milestones",
+    "features"
+  ],
+  "commands": [
+    "./commands"
+  ],
+  "agents": [
+    "./agents/architecture-analyst.md",
+    "./agents/codebase-investigator.md",
+    "./agents/correction-worker.md",
+    "./agents/external-researcher.md",
+    "./agents/feature-implementer.md",
+    "./agents/improvement-analyst.md",
+    "./agents/milestone-orchestrator.md",
+    "./agents/milestone-reviewer.md",
+    "./agents/mission-planner.md",
+    "./agents/mission-reviewer.md",
+    "./agents/mission-strategist.md",
+    "./agents/qa-validator.md"
+  ]
+}

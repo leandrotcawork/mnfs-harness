@@ -1,0 +1,23 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "mnfs-local",
+  "metadata": {
+    "description": "Local marketplace wrapper for the MNFS Claude Code plugin."
+  },
+  "owner": {
+    "name": "Leandro Theodoro"
+  },
+  "plugins": [
+    {
+      "name": "mnfs-workflow",
+      "description": "Mission, Milestone, Feature workflow guidance for scoped implementation, validation, and handoff.",
+      "version": "0.1.0",
+      "author": {
+        "name": "MNFS workflow authors"
+      },
+      "source": "./",
+      "category": "productivity",
+      "tags": ["workflow", "planning", "validation", "missions", "milestones", "features"]
+    }
+  ]
+}
