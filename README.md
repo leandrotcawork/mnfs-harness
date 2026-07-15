@@ -55,11 +55,19 @@ Pré-requisitos:
 ### Instalar o plugin no Claude Code
 
 Este repo é um plugin marketplace do Claude Code (manifesto em
-`.claude-plugin/marketplace.json`). Instalação direta do GitHub, dentro do Claude Code:
+`.claude-plugin/marketplace.json`) com DOIS plugins:
+
+| Plugin | O que traz |
+|---|---|
+| `mnfs-workflow` | Camada de contrato + verdict: `/mission-init`, `/milestone-validate`, `/mission-validate`, `/correction-create`, `/mission-closeout`, `/status` + agents (reviewers, QA, investigators) |
+| `harness` | Engine de execução: skills `harness-hub` (boot do hub), `harness-worker` (regras de chip/worker), `codex-dispatch` (resolver role→flags) + template `HARNESS.md` |
+
+Instalação direta do GitHub, dentro do Claude Code:
 
 ```
 /plugin marketplace add leandrotcawork/mnfs-harness
 /plugin install mnfs-workflow@mnfs-harness
+/plugin install harness@mnfs-harness
 ```
 
 Ou pelo terminal:
@@ -67,6 +75,7 @@ Ou pelo terminal:
 ```bash
 claude plugin marketplace add leandrotcawork/mnfs-harness
 claude plugin install mnfs-workflow@mnfs-harness
+claude plugin install harness@mnfs-harness
 ```
 
 Docs oficiais: https://code.claude.com/docs/en/discover-plugins e
@@ -79,9 +88,12 @@ Sincronize os arquivos alterados para o cache
 (`~/.claude/plugins/cache/<marketplace>/mnfs-workflow/<versão>/`) ou reinstale — o cache é
 derivado, a fonte é `mnfs-plugin/`.
 
-No repo de produto: copie `harness/HARNESS.md` para `docs/superpowers/HARNESS.md`, a skill
-`harness-worker` + `codex-dispatch` para `.agents/skills/` (tracked, workers em worktree
-precisam ver), e `harness-hub` para `.claude/skills/`.
+No repo de produto, um passo continua manual: copie `harness/HARNESS.md` para
+`docs/superpowers/HARNESS.md` e adapte — a doutrina vira ESPECÍFICA do repo (DAG da missão,
+portas do dev stack, blocos de migração, seams). O plugin traz o template; o repo é dono da
+versão vinculante. Opcional (pinning): copiar `harness-worker` + `codex-dispatch` para
+`.agents/skills/` tracked prende a versão da skill ao commit que o chip vê no worktree —
+sem a cópia, chips usam a versão do plugin instalado (global, pode mudar em voo).
 
 ---
 

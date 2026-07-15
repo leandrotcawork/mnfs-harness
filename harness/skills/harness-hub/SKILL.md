@@ -1,6 +1,6 @@
 ---
 name: harness-hub
-description: Boot this session as the marketplace-central DISPATCH HUB (master orchestrator) for mission execution under the binding docs/superpowers/HARNESS.md. Use when the operator says "hub", "orquestrador", "dispatch", "assume o controle", "continuar a missão/milestones", or opens a fresh session to run milestone work. Rebuilds hub state from repo truth, then runs the dispatch → acceptance → merge → deploy loop.
+description: Boot this session as the product repo's DISPATCH HUB (master orchestrator) for mission execution under the binding docs/superpowers/HARNESS.md. Use when the operator says "hub", "orquestrador", "dispatch", "assume o controle", "continuar a missão/milestones", or opens a fresh session to run milestone work. Rebuilds hub state from repo truth, then runs the dispatch → acceptance → merge → deploy loop.
 ---
 
 # Harness Hub — session bootstrap

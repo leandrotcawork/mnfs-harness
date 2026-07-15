@@ -9,6 +9,11 @@
       "name": "mnfs-workflow",
       "source": "./mnfs-plugin",
       "description": "Mission, Milestone, Feature workflow: planning (/mission-init), validation gates, correction scoping, closeout."
+    },
+    {
+      "name": "harness",
+      "source": "./harness",
+      "description": "Hub-and-chips execution engine: harness-hub, harness-worker, codex-dispatch skills + HARNESS.md doctrine template."
     }
   ]
 }

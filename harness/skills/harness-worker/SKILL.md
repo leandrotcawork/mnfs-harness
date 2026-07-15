@@ -1,6 +1,6 @@
 ---
 name: harness-worker
-description: Operating rules for ANY dispatched worker/session doing marketplace-central milestone or feature work (implementer, planner, reviewer, investigator, QA). Defers entirely to the binding docs/superpowers/HARNESS.md. Use when dispatched by the hub or a milestone session, or when any harness/protocol question arises. NEVER use mpc-goal-harness (superseded 2026-07-15).
+description: Operating rules for ANY dispatched worker/session doing product-repo milestone or feature work (implementer, planner, reviewer, investigator, QA). Defers entirely to the binding docs/superpowers/HARNESS.md. Use when dispatched by the hub or a milestone session, or when any harness/protocol question arises. NEVER use mpc-goal-harness (superseded 2026-07-15).
 ---
 
 # Harness Worker — dispatched-session rules
