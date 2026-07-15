@@ -1,11 +1,11 @@
 ---
 name: harness-worker
-description: Operating rules for ANY dispatched worker/session doing product-repo milestone or feature work (implementer, planner, reviewer, investigator, QA). Defers entirely to the binding docs/superpowers/HARNESS.md. Use when dispatched by the hub or a milestone session, or when any harness/protocol question arises. NEVER use mpc-goal-harness (superseded 2026-07-15).
+description: Operating rules for ANY dispatched worker/session doing product-repo milestone or feature work (implementer, planner, reviewer, investigator, QA). Defers entirely to the binding docs/HARNESS.md. Use when dispatched by the hub or a milestone session, or when any harness/protocol question arises. NEVER use mpc-goal-harness (superseded 2026-07-15).
 ---
 
 # Harness Worker — dispatched-session rules
 
-The ONLY binding harness is **`docs/superpowers/HARNESS.md`** — read the sections your
+The ONLY binding harness is **`docs/HARNESS.md`** — read the sections your
 dispatch prompt names (minimum §4 anti-slop contract + §5 verification ladder) before
 writing anything. This skill adds no doctrine; it routes you there and pins the
 non-negotiables that dispatched workers most often violate.

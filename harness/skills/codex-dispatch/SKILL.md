@@ -5,7 +5,7 @@ description: Role-to-flags resolver for every codex dispatch in the harness (fea
 
 # Codex Dispatch — role → exact invocation
 
-The model matrix lives in `docs/superpowers/HARNESS.md` §1 (binding). This skill is the
+The model matrix lives in `docs/HARNESS.md` §1 (binding). This skill is the
 mechanical resolver: pick the role, copy the line. Rules baked in: `--wait` always (SYNC to
 the dispatching session), `--effort` ALWAYS explicit (the global codex default is `xhigh` —
 omitting `--effort` silently burns time/cost), model ids exactly as written (a typo falls

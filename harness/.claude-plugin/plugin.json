@@ -1,7 +1,7 @@
 {
   "name": "harness",
   "version": "0.1.0",
-  "description": "Hub-and-chips execution engine: dispatch hub boot (harness-hub), milestone chip protocol (harness-worker), and the codex role-to-flags resolver (codex-dispatch). Doctrine template in HARNESS.md — vendor it to docs/superpowers/HARNESS.md in the product repo.",
+  "description": "Hub-and-chips execution engine: dispatch hub boot (harness-hub), milestone chip protocol (harness-worker), and the codex role-to-flags resolver (codex-dispatch). Doctrine template in HARNESS.md — vendor it to docs/HARNESS.md in the product repo.",
   "author": {
     "name": "leandrotcawork"
   },

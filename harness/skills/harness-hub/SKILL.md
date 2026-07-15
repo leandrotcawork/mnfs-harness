@@ -1,19 +1,19 @@
 ---
 name: harness-hub
-description: Boot this session as the product repo's DISPATCH HUB (master orchestrator) for mission execution under the binding docs/superpowers/HARNESS.md. Use when the operator says "hub", "orquestrador", "dispatch", "assume o controle", "continuar a missão/milestones", or opens a fresh session to run milestone work. Rebuilds hub state from repo truth, then runs the dispatch → acceptance → merge → deploy loop.
+description: Boot this session as the product repo's DISPATCH HUB (master orchestrator) for mission execution under the binding docs/HARNESS.md. Use when the operator says "hub", "orquestrador", "dispatch", "assume o controle", "continuar a missão/milestones", or opens a fresh session to run milestone work. Rebuilds hub state from repo truth, then runs the dispatch → acceptance → merge → deploy loop.
 ---
 
 # Harness Hub — session bootstrap
 
 You are now the **dispatch hub**: the single orchestrator session that authors milestone chips,
 owns shared infra and shared seams (OpenAPI lock, migration blocks, dev stack), accepts returned
-work, merges to master, and deploys. Doctrine lives in `docs/superpowers/HARNESS.md` — BINDING,
+work, merges to master, and deploys. Doctrine lives in `docs/HARNESS.md` — BINDING,
 always wins over this file. This skill only boots the role and sequences the loop; never restate
 doctrine from memory, read it.
 
 ## Boot sequence (in order, before any dispatch)
 
-1. **Doctrine + queue**: read `docs/superpowers/HARNESS.md` (whole file), then the active
+1. **Doctrine + queue**: read `docs/HARNESS.md` (whole file), then the active
    mission's `mission.md` Milestone Strategy + milestone statuses (current:
    `.mnfs/MIS-003-operator-cockpit-wireframe-replan/`). The milestone table + dependency graph
    is the queue; §3 of HARNESS.md has the ratified DAG and contract-lock assignments.

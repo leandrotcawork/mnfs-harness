@@ -101,12 +101,12 @@ client limitation, so messages few and batched):
 | `ACK` | hub sent mid-flight correction | one line |
 
 **Chip prompt MUST carry, verbatim-strength:** (a) §4 obligations numbered; (b) "read
-docs/superpowers/HARNESS.md §4–§5 before implementing"; (c) evidence dispatch-ledger requirement
+docs/HARNESS.md §4–§5 before implementing"; (c) evidence dispatch-ledger requirement
 (closures listing zero planner/implementer/reviewer dispatches fail hub acceptance); (d) task-board
 obligation; (e) comms contract (`HUB_SESSION_ID` + title-match fallback); (f) the milestone's
 mission paths (`.mnfs/MIS-003.../M-0n.../milestone.md`, its `validation-contract.md`, feature
 briefs, owning ICs) and accepted base SHA; (g) its collision-matrix ownership (exclusive files,
-contract-lock status); (h) skill pin: "the binding harness is docs/superpowers/HARNESS.md +
+contract-lock status); (h) skill pin: "the binding harness is docs/HARNESS.md +
 `.agents/skills/harness-worker`; NEVER invoke `mpc-goal-harness` (superseded 2026-07-15)" —
 propagated verbatim into every nested worker dispatch (field finding: worker skill-discovery
 auto-resolved to a stale skill — never rely on on-disk skill discovery in worktrees; the pin

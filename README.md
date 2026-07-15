@@ -36,7 +36,7 @@ harness/              doutrina hub-and-chips (template canônico)
 ```
 
 **Regra de binding:** dentro de um repositório de produto (ex.: `marketplace-central`), o
-`docs/superpowers/HARNESS.md` DAQUELE repo é o que vale para execução. Este repo guarda o
+`docs/HARNESS.md` DAQUELE repo é o que vale para execução. Este repo guarda o
 template canônico: melhorias pousam aqui E no(s) repo(s) de produto; divergência é conflito a
 reconciliar (repo de produto vence para missões em voo).
 
@@ -89,7 +89,7 @@ Sincronize os arquivos alterados para o cache
 derivado, a fonte é `mnfs-plugin/`.
 
 No repo de produto, um passo continua manual: copie `harness/HARNESS.md` para
-`docs/superpowers/HARNESS.md` e adapte — a doutrina vira ESPECÍFICA do repo (DAG da missão,
+`docs/HARNESS.md` e adapte — a doutrina vira ESPECÍFICA do repo (DAG da missão,
 portas do dev stack, blocos de migração, seams). O plugin traz o template; o repo é dono da
 versão vinculante. Opcional (pinning): copiar `harness-worker` + `codex-dispatch` para
 `.agents/skills/` tracked prende a versão da skill ao commit que o chip vê no worktree —
@@ -231,7 +231,7 @@ Pegadinha única que importa: `--apply` em todo comando que muta (senão é dry-
 - Editou um reference card compartilhado entre skills? Rode
   `mnfs-plugin/scripts/sync-shared-references.sh --check` (cards são cópias byte-idênticas por
   design).
-- Melhorou a doutrina do harness? Aplique aqui E no `docs/superpowers/HARNESS.md` do(s) repo(s)
+- Melhorou a doutrina do harness? Aplique aqui E no `docs/HARNESS.md` do(s) repo(s)
   de produto — os dois andam juntos.
 
 ## Histórico
