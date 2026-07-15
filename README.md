@@ -52,10 +52,32 @@ Pré-requisitos:
 - **`agent-browser@0.29.1` global** — sem ele a validação live-UI de milestones com superfície
   de usuário retorna `Blocked` (não é bug: é falta do pré-requisito).
 
-Plugin: este repo entra como marketplace de diretório. No
-`~/.claude/plugins/known_marketplaces.json`, a entrada `mnfs-local` aponta para
-`<este-repo>/mnfs-plugin`. Editou o plugin aqui? Sincronize os arquivos alterados para o cache
-(`~/.claude/plugins/cache/mnfs-local/mnfs-workflow/<versão>/`) ou reinstale — o cache é derivado.
+### Instalar o plugin no Claude Code
+
+Este repo é um plugin marketplace do Claude Code (manifesto em
+`.claude-plugin/marketplace.json`). Instalação direta do GitHub, dentro do Claude Code:
+
+```
+/plugin marketplace add leandrotcawork/mnfs-harness
+/plugin install mnfs-workflow@mnfs-harness
+```
+
+Ou pelo terminal:
+
+```bash
+claude plugin marketplace add leandrotcawork/mnfs-harness
+claude plugin install mnfs-workflow@mnfs-harness
+```
+
+Docs oficiais: https://code.claude.com/docs/en/discover-plugins e
+https://code.claude.com/docs/en/plugin-marketplaces.
+
+**Desenvolvimento local** (clone deste repo): adicione o marketplace pelo caminho local —
+`/plugin marketplace add ./mnfs-harness` — ou aponte a entrada em
+`~/.claude/plugins/known_marketplaces.json` para `<este-repo>`. Editou o plugin aqui?
+Sincronize os arquivos alterados para o cache
+(`~/.claude/plugins/cache/<marketplace>/mnfs-workflow/<versão>/`) ou reinstale — o cache é
+derivado, a fonte é `mnfs-plugin/`.
 
 No repo de produto: copie `harness/HARNESS.md` para `docs/superpowers/HARNESS.md`, a skill
 `harness-worker` + `codex-dispatch` para `.agents/skills/` (tracked, workers em worktree

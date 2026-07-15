@@ -1,0 +1,14 @@
+{
+  "name": "mnfs-harness",
+  "owner": {
+    "name": "leandrotcawork"
+  },
+  "description": "MNFS mission planning + verdict layer and the hub-and-chips execution harness.",
+  "plugins": [
+    {
+      "name": "mnfs-workflow",
+      "source": "./mnfs-plugin",
+      "description": "Mission, Milestone, Feature workflow: planning (/mission-init), validation gates, correction scoping, closeout."
+    }
+  ]
+}
