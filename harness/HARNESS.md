@@ -116,7 +116,13 @@ A milestone whose internal parallelism needs a second WRITER on a shared seam st
 `SPLIT-REQUEST`; the hub adjudicates against the collision matrix and forks a sibling worktree
 if clean.
 
-**Collision matrix — two tracks run concurrently ONLY when disjoint on ALL axes:**
+**Collision matrix — two tracks run concurrently ONLY when disjoint on ALL axes.**
+Source of truth: the mission's `## Parallel Execution Plan` (mission.md) — planning authors the
+DAG + per-milestone ownership matrix on these same six axes at P5, and each milestone.md carries
+an `## Ownership & Concurrency` block; the hub verifies at dispatch time instead of deriving the
+matrix from scratch. Missions planned before 2026-07-15 (e.g. MIS-003) lack these blocks: the
+hub derives the matrix itself (as below) and persists each milestone's `## Ownership & Concurrency`
+block into its milestone.md at chip-authoring time (lazy retrofit).
 
 | Axis | Collision test | If collide |
 |---|---|---|
