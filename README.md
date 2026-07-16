@@ -28,17 +28,23 @@ mnfs-plugin/          plugin Claude Code (marketplace "mnfs-local") — SOURCE O
   scripts/            status-integrity.sh (gate de integridade), sync-shared-references.sh
   docs/               4 referências de runtime (shared-standards, state-model,
                       validation-system, file-contracts — carregadas por skills)
-harness/              doutrina hub-and-chips (template canônico)
-  HARNESS.md          a doutrina completa (§1 matriz de modelos ... §8 handoff)
+harness/              doutrina hub-and-chips em duas camadas
+  HARNESS-CORE.md     MÉTODO puro (§1 matriz de modelos ... §8 handoff) — zero nome de produto;
+                      §0 define o contrato de profile + protocolo de emenda
+  PROFILE-TEMPLATE.md SCHEMA do profile de repo (não é formulário — o profile nasce magro e
+                      cresce por ratificação de findings de campo)
+  skills/harness-init/    skill que GERA o profile inicial num repo virgem (scouts + entrevista)
   skills/harness-hub/     skill que boota a sessão HUB (orquestrador)
   skills/harness-worker/  regras para qualquer sessão despachada
   skills/codex-dispatch/  papel → flags exatas de /codex:rescue
 ```
 
-**Regra de binding:** dentro de um repositório de produto (ex.: `marketplace-central`), o
-`docs/HARNESS.md` DAQUELE repo é o que vale para execução. Este repo guarda o
-template canônico: melhorias pousam aqui E no(s) repo(s) de produto; divergência é conflito a
-reconciliar (repo de produto vence para missões em voo).
+**Regra de binding (3 camadas):** execução num repo de produto = **CORE** (método, vem do
+plugin) + **PROFILE** (`docs/HARNESS-PROFILE.md` DO repo — comandos, seams, eixos de colisão,
+não-negociáveis) + **MISSÃO** (`.mnfs/` — fila, DAG). Conteúdo de missão nunca vive em
+doutrina. Melhorias de MÉTODO pousam no core (update do plugin); achados DO repo pousam no
+profile via ratificação datada (core §0). Repos legados com `docs/HARNESS.md` combinado:
+continua vinculante para missões em voo; o hub troca na fronteira de milestone.
 
 ---
 
@@ -60,7 +66,7 @@ Este repo é um plugin marketplace do Claude Code (manifesto em
 | Plugin | O que traz |
 |---|---|
 | `mnfs-workflow` | Camada de contrato + verdict: `/mission-init`, `/milestone-validate`, `/mission-validate`, `/correction-create`, `/mission-closeout`, `/status` + agents (reviewers, QA, investigators) |
-| `harness` | Engine de execução: skills `harness-hub` (boot do hub), `harness-worker` (regras de chip/worker), `codex-dispatch` (resolver role→flags) + template `HARNESS.md` |
+| `harness` | Engine de execução: skills `harness-init` (gera o profile do repo), `harness-hub` (boot do hub), `harness-worker` (regras de chip/worker), `codex-dispatch` (resolver role→flags) + doutrina `HARNESS-CORE.md` + schema `PROFILE-TEMPLATE.md` |
 
 Instalação direta do GitHub, dentro do Claude Code:
 
@@ -88,12 +94,17 @@ Sincronize os arquivos alterados para o cache
 (`~/.claude/plugins/cache/<marketplace>/mnfs-workflow/<versão>/`) ou reinstale — o cache é
 derivado, a fonte é `mnfs-plugin/`.
 
-No repo de produto, um passo continua manual: copie `harness/HARNESS.md` para
-`docs/HARNESS.md` e adapte — a doutrina vira ESPECÍFICA do repo (DAG da missão,
-portas do dev stack, blocos de migração, seams). O plugin traz o template; o repo é dono da
-versão vinculante. Opcional (pinning): copiar `harness-worker` + `codex-dispatch` para
-`.agents/skills/` tracked prende a versão da skill ao commit que o chip vê no worktree —
-sem a cópia, chips usam a versão do plugin instalado (global, pode mudar em voo).
+No repo de produto NÃO se copia doutrina. Primeiro boot do harness num repo virgem: invoque a
+skill `harness-init` — ela dispara scouts read-only no código + faz UMA entrevista curta e gera
+`docs/HARNESS-PROFILE.md` mínimo (comandos L0/L1, bootstrap, seams), com cada seção marcada
+`ratified | assumed | open`. O profile nasce magro e cresce sozinho: cada finding de campo que
+o hub ratifica vira uma linha datada no Amendment log (protocolo no core §0). O método
+(`HARNESS-CORE.md`) vem sempre do plugin — atualizar o plugin atualiza o método em todos os
+repos sem tocar o profile de nenhum. Repos legados com `docs/HARNESS.md` combinado: continua
+vinculante para missões em voo; troca na fronteira de milestone. Opcional (pinning): copiar
+`harness-worker` + `codex-dispatch` para `.agents/skills/` tracked prende a versão da skill ao
+commit que o chip vê no worktree — sem a cópia, chips usam a versão do plugin instalado
+(global, pode mudar em voo).
 
 ---
 
@@ -231,11 +242,20 @@ Pegadinha única que importa: `--apply` em todo comando que muta (senão é dry-
 - Editou um reference card compartilhado entre skills? Rode
   `mnfs-plugin/scripts/sync-shared-references.sh --check` (cards são cópias byte-idênticas por
   design).
-- Melhorou a doutrina do harness? Aplique aqui E no `docs/HARNESS.md` do(s) repo(s)
-  de produto — os dois andam juntos.
+- Melhorou a doutrina do harness? Classifique primeiro (core §0): achado de MÉTODO (vale para
+  qualquer repo) → edite `harness/HARNESS-CORE.md` aqui e sincronize o cache; achado DE UM repo
+  (comando, seam, false-alarm, race) → NÃO entra aqui — vira ratificação datada no
+  `docs/HARNESS-PROFILE.md` daquele repo. Mudou o schema do profile? `PROFILE-TEMPLATE.md` aqui.
 
 ## Histórico
 
+- 2026-07-15 (tarde): **doutrina em camadas (A′)** — `harness/HARNESS.md` (template combinado,
+  fork-and-edit) substituído por `HARNESS-CORE.md` (método puro, genérico, plugin-shipped) +
+  `PROFILE-TEMPLATE.md` (schema do profile de repo) + skill `harness-init` (profile emergente:
+  scouts + entrevista no primeiro boot; cresce por ratificação datada — core §0). Skills
+  `harness-hub`/`harness-worker` reescritas para binding core+profile+missão. Motivação com
+  evidência: auditoria de proveniência mostrou que TODO conteúdo repo-específico da doutrina
+  nasceu de findings de campo datados — ninguém preenche formulário, o campo ensina.
 - 2026-07-15: repo criado (fonte original do plugin perdida; reconstruído do cache vivo).
   Parallel-first planning (P5, Parallel Execution Plan, Ownership & Concurrency, rubrica ★3 com
   auditoria de disjunção em 6 eixos). Análise de sistema: superfície morta removida, dedup
