@@ -51,12 +51,33 @@ a schema, not a form) and grow from field findings, exactly like mission evidenc
 Concurrency: bounded by operator attention (chips) + ≤15 workers per session. The top-tier
 frontier model (e.g. Fable) is never a worker.
 
-**Codex invocation rule:** all codex dispatches route through
-`/codex:rescue --model <m> --effort <e> --wait` (companion runtime handles result-handling,
-resume threading, stdout-verbatim capture for the dispatch ledger; `--wait` = foreground = SYNC).
-Raw `codex exec` is permitted ONLY for the one-off codex precondition probe.
-Role → exact flags: use the `codex-dispatch` skill — never retype the matrix from memory, and
-NEVER omit `--effort` (global codex default is `xhigh`: silently slower/costlier).
+**Codex dispatch paths (ruling 2026-07-16, M-01 escalation):** two legal paths, chosen by
+expected duration. Role → exact flags/path: use the `codex-dispatch` skill — never retype the
+matrix from memory, and NEVER omit effort (global codex default is `xhigh`: silently
+slower/costlier).
+- **Long dispatches — expected >~2 min (feature planner, implement worker, gate review: any
+  run where a hang is indistinguishable from work) → OS-process codex per §3.** Stdin closed,
+  prompt read from a file (never a long inline arg), stdout teed to a scratchpad
+  `agent__<id>.log`, `-o <scratchpad>/agent__<id>.last.md` (the CLI writes the final message
+  verbatim to disk — ceremony field-verified 2026-07-16), `.done` sentinel on exit. These
+  files ARE the §8 dashboard feed and the ledger's `Log`/output columns; a long dispatch with
+  no teed log cannot be told apart from a hang (M-01: 679s gate reviews ran fully blind).
+- **Short dispatches (probes, quick investigations, anything needing companion resume
+  threading) → `/codex:rescue --model <m> --effort <e> --wait`.** The companion returns
+  stdout to the calling session's CONTEXT ONLY — it writes NO ledger-addressable artifact
+  (the prior "stdout-verbatim capture for the dispatch ledger" rationale was false;
+  field-verified M-01, withdrawn). Users of this path write the ledger row AT DISPATCH TIME
+  and paste verbatim output into an evidence file the row points at. Multi-line prompts on
+  this path go via `--prompt-file`, never inline `--task` — inline hits shell command-length
+  limits and MANGLES QUOTING SILENTLY (field-verified M-01: a truncated reviewer prompt still
+  emits a confident verdict).
+
+**Ledger rule — Claude-side workers (Agent-tool subagents: per-slice reviewers, cold Opus
+gate, mechanical):** no OS log exists, so the ledger row is written AT DISPATCH TIME, before
+reading the result — role, model, effort, prompt-pack file path — then completed with the
+verdict/output artifact path. Prompt-packs and verdicts are files on disk; rows anchor to
+artifacts, never to session prose. Any worker with no row = acceptance defect (M-01 lost its
+7 most consequential dispatches to exactly this gap).
 
 **Codex precondition:** before the first codex-dependent dispatch, hub verifies `codex exec`
 works on this machine (field finding 2026-07-14: Windows sandbox can be broken machine-wide —
@@ -143,9 +164,10 @@ hub-dispatched sibling milestone/feature tracks** — one worktree/branch/chip e
 **Agent/Task-tool** nested child of a chip completes to the HUB's loop, never to its parent —
 parent deadlocks. The artifact is Agent/Task routing, NOT parallelism itself. Rules:
 - Agent/Task-tool nested children: SYNC only (`run_in_background: false`).
-- **OS-process codex dispatch** (background shell: stdin closed, output teed to a scratchpad
-  log, `.done` sentinel) completes to the DISPATCHING session's own loop (field-verified
-  2026-07-15) — allowed intra-milestone, including backgrounded, subject to: one writer per
+- **OS-process codex dispatch** (background shell: stdin closed, prompt from file, output
+  teed to a scratchpad log, `-o` last-message file, `.done` sentinel) completes to the
+  DISPATCHING session's own loop (field-verified 2026-07-15) — allowed intra-milestone,
+  including backgrounded, and MANDATED for long dispatches per §1; subject to: one writer per
   seam still holds; every worker in the dispatch ledger; slice review before any dependent
   slice starts.
 A milestone whose internal parallelism needs a second WRITER on a shared seam still emits
