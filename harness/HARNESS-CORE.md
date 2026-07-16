@@ -189,8 +189,9 @@ Milestone-session obligations, checkable:
    the speed lever; skipping planning to "go fast" is a violation.
 2. Code slices implemented by dispatched codex workers (Luna high standard / Sol low complex).
    The orchestrating session writes inline ONLY trivial glue (≤ ~10 lines, no new behavior).
-3. Every slice reviewed by an **independent Claude reviewer** before the next slice. Implementer
-   ≠ reviewer, non-negotiable.
+3. Every slice reviewed by an **independent Claude reviewer** before it is merged and before
+   any DEPENDENT slice starts; a disjoint next slice may be implemented while the review runs
+   (REVIEW-STANDARD §15 overlap rule). Implementer ≠ reviewer, non-negotiable.
 4. **Dual gate at CLOSED:** full Opus review + independent GPT-5.6 Sol medium review (git
    read-only: diff/show/log — never checkout/apply/stash) on the fixed-SHA milestone diff.
    `CLOSED` only after BOTH clear; disagreement = both verdicts + reconciliation in the event.
@@ -207,7 +208,10 @@ machine-owned), explicit global-vs-local-maximum design questions (G1-G3, altern
 notes on non-trivial decisions), Beck simplicity rules (YAGNI + DRY rule-of-three), two-axis
 severity on every finding (`blocking|important|suggestion|nit|question` + anchored `path:line`),
 anchor-or-abstain with receipts, deterministic pre-pass before judgment, dual-gate agreement
-merge, delta-only re-review, learnings memory, ≤~300-line slices.
+merge, delta-only re-review, learnings memory, ≤~300-line slices. Execution model per
+REVIEW-STANDARD §13-§16: prompt-pack dispatch (one reviewer per slice, never a crew; dual gate
+dispatched simultaneously), disjoint-slice overlap cadence, artifact-gate (★ crew) noise
+control (FAIL-restraint, advisory cap, learnings suppression).
 
 **AI-slop checklist — any hit = REJECT the slice:** speculative abstraction / one-impl
 interfaces with no named consumer · comment narration / PR-voice comments · blanket

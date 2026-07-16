@@ -61,6 +61,19 @@ Reference-guided: grade each downstream artifact against its parent brief and th
 - Should-meet findings are logged but never flip the verdict.
 - At P7 the planning session dispatches a CREW of cold, independent scoped reviewers in parallel rather than one 10-criteria reader — each covers a criterion cluster (★1+★5, ★2+★3, ★4+★6, ★7) so each reads the whole tree with undivided attention; ★2 Consistency and ★7 Security Posture additionally get a second independent adversarial pass (a divergence or unguarded auth/PII surface is silent and high-cost if missed). Each scoped reviewer returns per-criterion PASS/FAIL with cited loci and computes no verdict of its own. The session FOLDS the crew: a ★ criterion FAILS if ANY reviewer that covered it returns FAIL at a cited locus; the fold UNIONs findings and NEVER downgrades a sub-reviewer FAIL to PASS. The session then computes the verdict from the seven folded ★ results by the fixed rule above. The crew adds no new criterion. If parallel dispatch is unavailable, a single full pass plus the ★2+★7 adversarial pass is the fallback.
 
+## Noise Control (binding on every run — verdict mechanics above stay untouched)
+
+- **FAIL-restraint:** a ★ criterion FAILS only when its NAMED procedure fails at a cited locus
+  with a VERBATIM quoted excerpt (no paraphrase). Preference, style, wording, or improvement
+  ideas are `advisory` findings — logged in their own section, never a FAIL, never in the
+  yes-if list, never an auto-revise trigger.
+- **Advisory cap:** the fold dedupes advisory findings and reports at most the top 10 by
+  impact; drop the rest with a count line.
+- **Learnings suppression:** when the repo profile binds a review-learnings file, load it
+  before reviewing and do not re-flag recorded patterns.
+- Adversarial passes keep their over-flag stance at FINDING time; restraint applies at VERDICT
+  time — a finding without a verbatim locus quote cannot flip a ★ to FAIL.
+
 ## Output Contract
 Return (and let the planner persist to `<mission-root>/readiness-review.md`):
 

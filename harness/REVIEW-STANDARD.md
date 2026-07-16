@@ -130,3 +130,76 @@ are exempt when declared as such in the brief.
 Author/reviewer non-convergence after one full round → hub adjudicates (technical facts beat
 opinion; profile/ADR rules beat preference). Slice fails review 2× → redesign the slice, not a
 third patch (core §7).
+
+## 13. Execution model — who runs what (quality × speed)
+
+The speed lever is NOT fewer reviewers (parallel reviewers share one wall-clock) — it is fewer
+FALSE FAILS: every wrong FAIL costs a full correction round. Frequency decides weight:
+
+| Layer | Frequency | Vehicle | Reviewers | Parallelism |
+|---|---|---|---|---|
+| Slice review | every slice | prompt-pack (§14) into ONE independent reviewer (model per core §1 matrix) | 1 — never a crew | may overlap a DISJOINT next slice (§15) |
+| Dual gate | 1×/milestone + deltas | prompt-pack into both reviewers, dispatched SIMULTANEOUSLY | 2 (two model families) | parallel; merge per §8 |
+| Artifact gates (★ crews) | 1×/milestone · 1×/mission | plugin rubrics (their own authority) + noise control (§16) | cold crew per rubric | parallel scoped clusters |
+| Hub spot-check | on acceptance (optional) | prompt-pack, git read-only | 1 | — |
+
+Reviewer INPUT is bounded: the diff + slice brief + deterministic (L0) report + learnings file
++ targeted reads for receipts. Never whole-repo crawls at review time.
+
+## 14. Reviewer prompt-pack — paste into every code-review dispatch
+
+~~~text
+You are an INDEPENDENT code reviewer (implementer ≠ reviewer). Verdict bar: does this change
+definitely improve overall system health? Approve net-positive imperfection; reviews verify,
+never generate scope.
+
+Inputs: the diff (fixed SHA), the slice brief, the deterministic L0 report, the repo
+review-learnings file. Read further code ONLY to verify claims (receipts).
+
+Review in this order, budget attention top-down:
+1 DESIGN — G1: right solution for the WHOLE system (check ADRs/interface contracts/module
+  map), not just this diff? G2: non-trivial decisions carry an alternatives-considered note in
+  the plan/brief (missing = important finding)? G3: does this block a NAMED upcoming
+  milestone/feature (mission DAG)?
+2 CORRECTNESS — brief intent, consumer impact, edge cases, failure paths, concurrency.
+3 SIMPLICITY — YAGNI: new abstraction needs a second NAMED consumer, else speculative;
+  DRY: duplication of an existing symbol = cite it path:line, rule of three;
+  fewest elements: flag what cannot be understood quickly.
+4 TESTS — behavior coverage not line coverage; negative + cross-tenant cases; asserting the
+  mock = test theater.
+5 NAMING/READABILITY. 6 DOCS/CONTRACTS updated with the code.
+NEVER comment style — machine-owned (formatter/linters).
+Then run the REJECT checklist (core §4 AI-slop list): any hit = REJECT.
+
+Every finding: `severity(path:line): problem. fix.` severity ∈
+blocking|important|suggestion|nit|question. Anchor to the real diff or file it under a
+`general` bucket — never fake a line. Verify every blocking/important claim against actual
+code before posting and quote the receipt; unverified = speculative, max severity suggestion.
+Do not re-flag patterns recorded in the learnings file.
+
+Verdict: REJECT if any blocking, or any important unresolved. Otherwise APPROVE (open
+suggestion/nit items listed = LGTM-with-comments; a re-review round is never spent on nits
+alone). Output: verdict · G1-G3 one-liners · findings table · receipts. No praise, no preamble.
+~~~
+
+## 15. Cadence — overlap rule
+
+Slice N's review must be green before slice N is MERGED and before any slice that DEPENDS on N
+starts. A disjoint slice N+1 (no shared files/seams per the collision axes) MAY be implemented
+while N's review runs. A REJECT on N never invalidates disjoint N+1 work. Serial remains the
+rule for same-file/same-seam sequences.
+
+## 16. Artifact-gate (★ crew) noise control
+
+Binds every rubric run (readiness + milestone). The 7★ binary verdict mechanics stay untouched
+— contract compliance is binary. What changes is what counts as a FAIL versus advisory:
+
+- **FAIL-restraint:** a ★ criterion FAILS only when its NAMED procedure fails at a cited locus
+  with a VERBATIM quoted excerpt (no paraphrase). Preference, style, wording, or improvement
+  ideas are `advisory` — logged, never a FAIL, never in the yes-if list.
+- **Advisory cap:** the fold dedupes advisory findings and reports at most the top 10 by
+  impact; the rest are dropped with a count. Advisory items never trigger correction rounds.
+- **Learnings:** when the repo profile binds a review-learnings file, crew reviewers load it
+  and do not re-flag recorded patterns.
+- Adversarial double-passes keep their over-flag stance at FINDING time; the restraint applies
+  at VERDICT time (a finding without a verbatim locus quote cannot flip a ★ to FAIL).

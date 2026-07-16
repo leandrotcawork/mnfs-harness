@@ -80,6 +80,19 @@ Must-meet (★): 1 Criteria coverage, 2 Evidence honesty, 3 Verifiability, 4 Int
 - The gate also folds the qa-validator live runtime validation pass (see above): a `defect` folds to FAIL on ★1/★3 (and ★4 where a seam broke); a user-facing or runnable milestone with `could-not-drive` (no live-driven evidence) cannot PASS ★3 and makes the verdict `Blocked`. The fold never upgrades a live `defect` or a missing-live-evidence `could-not-drive` to PASS.
 - The gate dispatches a CREW of cold, independent scoped reviewers in parallel rather than one seven-criteria reader — each covers a criterion cluster (★1+★5, ★2+★3, ★4+★7, ★6) so each reads the whole milestone with undivided attention; ★2 Evidence honesty and ★4 Integration additionally get a second independent adversarial pass (a self-graded false `Pass` and a silent seam divergence are high-cost if missed). Each scoped reviewer returns per-criterion PASS/FAIL with cited loci and computes no verdict of its own. The dispatching session FOLDS the crew: a ★ criterion FAILS if ANY reviewer that covered it returns FAIL at a cited locus; the fold UNIONs findings and NEVER downgrades a sub-reviewer FAIL to PASS. The session then computes the verdict from the seven folded ★ results by the fixed rule above. The crew adds no new criterion. If parallel dispatch is unavailable, a single full pass plus the ★2+★4 adversarial pass is the fallback.
 
+## Noise Control (binding on every run — verdict mechanics above stay untouched)
+
+- **FAIL-restraint:** a ★ criterion FAILS only when its NAMED procedure fails at a cited locus
+  with a VERBATIM quoted excerpt (no paraphrase). Preference, style, wording, or improvement
+  ideas are `advisory` findings — logged in their own section, never a FAIL, never in the
+  yes-if list, never a correction trigger.
+- **Advisory cap:** the fold dedupes advisory findings and reports at most the top 10 by
+  impact; drop the rest with a count line.
+- **Learnings suppression:** when the repo profile binds a review-learnings file, load it
+  before reviewing and do not re-flag recorded patterns.
+- Adversarial passes keep their over-flag stance at FINDING time; restraint applies at VERDICT
+  time — a finding without a verbatim locus quote cannot flip a ★ to FAIL.
+
 ## Output Contract
 
 Return (and let the dispatching session persist to `<milestone-root>/milestone-review.md`, then fold into `validation-result.md`):
