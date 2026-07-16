@@ -201,6 +201,14 @@ Milestone-session obligations, checkable:
    dispatches listed = fails hub acceptance.
 8. Native task board live at all times: in_progress at dispatch, completed only reviewed-green.
 
+**Every code review (slice, dual gate, hub spot-check) follows `REVIEW-STANDARD.md` — BINDING:**
+fixed review order (design → correctness → complexity → tests → naming → docs; style is
+machine-owned), explicit global-vs-local-maximum design questions (G1-G3, alternatives-considered
+notes on non-trivial decisions), Beck simplicity rules (YAGNI + DRY rule-of-three), two-axis
+severity on every finding (`blocking|important|suggestion|nit|question` + anchored `path:line`),
+anchor-or-abstain with receipts, deterministic pre-pass before judgment, dual-gate agreement
+merge, delta-only re-review, learnings memory, ≤~300-line slices.
+
 **AI-slop checklist — any hit = REJECT the slice:** speculative abstraction / one-impl
 interfaces with no named consumer · comment narration / PR-voice comments · blanket
 recover/try-catch, fallbacks on integrity-critical reads (unknown ≠ zero — fail honest; the
@@ -210,7 +218,8 @@ commented blocks / unanchored TODOs · hand-rolled platform equivalents · gener
 case where the profile defines tenancy) · permanent stub/nil dependency wired into a composition
 root live path (a stub on a live path is legal ONLY with a dated deferral naming the slice that
 wires the real dependency, or explicit operator authorization — otherwise it is a defect, not a
-placeholder).
+placeholder) · duplication of an existing helper/pattern past the rule of three (reviewer cites
+the existing symbol `path:line`; third occurrence must refactor to shared).
 
 **Reviews verify, never generate scope.** New scope wanted = finding for the hub queue.
 
