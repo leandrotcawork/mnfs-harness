@@ -39,6 +39,7 @@ a schema, not a form) and grow from field findings, exactly like mission evidenc
 | **Feature planner** | **GPT-5.6 Sol, medium reasoning** via `/codex:rescue` | One thorough plan per feature BEFORE implementation — contracts, negative paths, seams, invariants, edge cases up front | Implementing |
 | **Implement worker (standard)** | **GPT-5.6 Luna, high reasoning** via `/codex:rescue` | Standard/easy TDD slices per the written plan | Slices flagged complex |
 | **Implement worker (complex)** | **GPT-5.6 Sol, low reasoning** via `/codex:rescue` | Complex slices (state machines, pollers, envelope gates, tricky SQL) | — |
+| **Implement worker (fallback)** | **Claude sonnet subagent** | Sanctioned fallback implementer when codex is unavailable (broken sandbox, quota) or the operator directs — same plan, TDD, slice-review, and ledger rules apply unchanged; not a logged deviation (ratified 2026-07-16; field-proven M-01 slices 8-12, gate-passing) | Being the default while codex works |
 | **Investigator / bulk reads** | **GPT-5.6 Luna, medium reasoning** via codex subagent (default); haiku investigator allowed for trivial repo greps | Find files, read/summarize, return compressed report — offloads Opus context AND Claude quota | Suggesting fixes beyond the report |
 | **Per-slice reviewer** | Independent Claude reviewer subagent (sonnet) | Reviews each slice before the next starts; implementer ≠ reviewer, always | Generating new scope |
 | **Final dual gate** | **COLD Opus subagent review (clean context, explicit `model=opus`) + GPT-5.6 Sol medium review** (both independent, same fixed SHA; NEVER the orchestrating session — self-grade bias) | Milestone-end diff review per §4 obligation 4 (canonical statement) | — |
@@ -77,7 +78,11 @@ gate, mechanical):** no OS log exists, so the ledger row is written AT DISPATCH 
 reading the result — role, model, effort, prompt-pack file path — then completed with the
 verdict/output artifact path. Prompt-packs and verdicts are files on disk; rows anchor to
 artifacts, never to session prose. Any worker with no row = acceptance defect (M-01 lost its
-7 most consequential dispatches to exactly this gap).
+7 most consequential dispatches to exactly this gap). **Accepted limitation (ruled
+2026-07-16):** Agent-tool dispatches produce no OS log and therefore no live dashboard feed —
+M-01's gate reviews ran 281-679s unwatched and that is the tool's shape, not a process gap to
+re-litigate. Mitigation IS the rule above: bounded inputs, SYNC dispatch, ledger row at
+dispatch time. Do not build per-run scaffolding to compensate.
 
 **Codex precondition:** before the first codex-dependent dispatch, hub verifies `codex exec`
 works on this machine (field finding 2026-07-14: Windows sandbox can be broken machine-wide —
@@ -105,11 +110,14 @@ P3 IMPLEMENT per slice: codex worker (Luna high standard / Sol low complex) — 
 P4 REVIEW    per slice: independent Claude reviewer BEFORE next slice (anti-slop checklist §4)
 P5 VERIFY    ladder L0→L2 (§5, commands per profile) from clean state, run by the milestone session
 P6 DUAL GATE per §4 obligation 4 (canonical): Opus + Sol medium on the fixed-SHA diff
-P7 QA        MNFS milestone gate: run `/milestone-validate <milestone-path> --apply` — the
-             independent cold `milestone-reviewer` crew + QA live-drive per the plugin's
-             validation skill; verdict artifact at <milestone-root>/validation-result.md
-             (only QA passes a milestone). Fail → `/correction-create` scopes; the chip
-             dispatches its corrective worker; full re-gate, never-downgrade across rounds
+P7 QA        milestone-close QA: LIVE-DRIVE by a fresh persona vs validation-contract.md
+             (user-level, browser where a UI exists; curl-only = FAIL); verdict artifact at
+             <milestone-root>/validation-result.md (only QA passes a milestone). The
+             /milestone-validate cold ★ crew is SUPERSEDED at milestone close by the P6
+             dual gate — do not stack both (operator-ratified 2026-07-16; field: M-01
+             round-1 five-member crew found zero defects, the live drive found the real
+             adapter gap + 4 more). Fail → `/correction-create` scopes; the chip dispatches
+             its corrective worker; full re-gate, never-downgrade across rounds
 P8 CLOSE     evidence per feature at F-*/validation.md; dispatch ledger; CLOSED event to hub
   ↓
 HUB          acceptance (verifies dual-gate + QA evidence) → merge --no-ff to default branch →
@@ -138,6 +146,7 @@ client limitation, so messages few and batched):
 | `ESCALATION` | out-of-scope defect found | classification + repro pointer; in-scope work continues |
 | `REQUEST` | needs shared resource (dev stack restart, DB reseed, dep install, contract lock) | what + why; hub owns shared infra and shared seams |
 | `SPLIT-REQUEST` | remaining features/slices mutually independent; split buys wall-clock | proposed groups + disjoint file/module ownership |
+| `COMMITTED` | mid-milestone landmark the hub may need to act on (slice/SHA landed on the chip branch) | commit SHA · what landed · standing-policy triggers (e.g. stack-sync per profile) — non-blocking, no reply owed (ratified 2026-07-16; M-01 used it 2× unnamed) |
 | `ACK` | hub sent mid-flight correction | one line |
 
 **Chip prompt MUST carry, verbatim-strength:** (a) §4 obligations numbered; (b) "read the core
@@ -191,6 +200,15 @@ block at chip-authoring time (lazy retrofit).
 | DB shape | both alter same table / module registration | one exclusive owner; other `REQUEST`s |
 | Module | both mutate same code module internals | serialize; cross-module edges via published interfaces are safe |
 
+**Additive contract-lock (named mechanism — proven 3× in the field, ratified 2026-07-16):**
+when a track needs a small addition to a module/port/registration surface another owner holds,
+the hub may grant a TEMPORARY ADDITIVE-ONLY lock instead of serializing the tracks: additions
+only (new method, new contract section, new registration line — never edits to existing
+lines), scoped to named files/sections, time-boxed to the milestone, released at CLOSED, and
+the resulting diff called out explicitly in the CLOSED payload. Planning (P2 slice cards, P5
+ownership blocks) pre-identifies these locks as OUTPUTS; discovering one mid-flight is a
+planning gap worth a retro line, not a normal event.
+
 **Merge protocol:** every track branches off the same current default branch; merge-back
 serialized through the ONE hub acceptance gate, smallest/lowest-risk first; post-merge ladder
 runs on the INTEGRATED default branch (green branch that reddens it = REJECT); still-in-flight
@@ -208,7 +226,13 @@ Milestone-session obligations, checkable:
    slice cards for ALL of the milestone's features + the shared module seam, BEFORE any
    implementation — never one-at-a-time at implement time. Batch-of-planning ≠
    batch-of-implementation: implementation still respects one-writer-per-seam. Plan quality is
-   the speed lever; skipping planning to "go fast" is a violation.
+   the speed lever; skipping planning to "go fast" is a violation. **Required plan OUTPUTS
+   (ratified 2026-07-16):** slice cards + a per-feature WRITE-SET (files/dirs each slice
+   touches — the write-DAG) + a CONTRACT-SATISFIABILITY check (every claimed contract
+   path/section diffed against the CURRENT contract state and sibling-track claims; a
+   colliding or already-occupied path is a planning defect, not an implementation discovery)
+   + pre-identified additive contract-locks (§3). M-01 field: 2 wasted dispatches + 2
+   escalations were plan-time-detectable contract conflicts.
 2. Code slices implemented by dispatched codex workers (Luna high standard / Sol low complex).
    The orchestrating session writes inline ONLY trivial glue (≤ ~10 lines, no new behavior).
 3. Every slice reviewed by an **independent Claude reviewer** before it is merged and before
@@ -259,7 +283,7 @@ Level SEMANTICS are core; exact commands, ports, and evidence paths are profile 
 | L1 | test suites — touched packages + guard suites; full sweep only when migrations/platform touched (commands per profile) | green; flaky = fix or delete |
 | L2 | dev stack up (per profile) · smoke: target routes, error shapes, contract ↔ SDK ↔ handler parity | green, evidence captured |
 | L3 | browser QA persona on the milestone VC Drive blocks | GREEN verdict artifact |
-| L4 | MNFS milestone gate `/milestone-validate <milestone-path> --apply` (cold `milestone-reviewer` crew + QA live-drive vs `validation-contract.md`; only QA passes a milestone) | PASS written to `<milestone-root>/validation-result.md` |
+| L4 | Milestone-close QA live-drive vs `validation-contract.md` (fresh persona; the ★ crew half of `/milestone-validate` is superseded at close by the P6 dual gate — operator-ratified 2026-07-16; only QA passes a milestone) | PASS written to `<milestone-root>/validation-result.md` |
 
 **Integration honesty (operator-ratified 2026-07-15):** validation contracts and tests NEVER
 fall back to stub/mock/fake for an integration seam unless the operator explicitly authorizes
