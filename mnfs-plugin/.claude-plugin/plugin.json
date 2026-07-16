@@ -1,6 +1,6 @@
 {
   "name": "mnfs-workflow",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Mission, Milestone, Feature workflow guidance for scoped implementation, validation, and handoff.",
   "author": {
     "name": "MNFS workflow authors"
