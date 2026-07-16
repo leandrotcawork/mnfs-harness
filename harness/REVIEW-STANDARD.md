@@ -113,6 +113,13 @@ on previously-flagged findings (`resolved`/`unresolved` each). Adjudicated findi
 re-surfaced (never-downgrade holds). Full re-review only when the hub declares the base
 invalidated.
 
+**Remedy re-reviews reuse the reviewer's retained context (ratified 2026-07-16):** a cold
+review costs 80-121k tokens re-loading standard + learnings + contract (field-measured, 3
+chips); a resumed reviewer verifying only the remedy costs a fraction (4× field-proven).
+Rule: remedy delta → resume the SAME reviewer (verify remedy + receipts only); new slice,
+dead reviewer, or invalidated base → fresh cold dispatch on bounded inputs. A dead reviewer's
+transcript is NEVER re-hydrated (field: 5 post-529 re-hydrations were pure waste).
+
 ## 10. Learnings memory — teach it once
 
 Operator/hub corrections of reviewer false positives are recorded one line each in the repo's
@@ -155,42 +162,39 @@ anchoring/sunk-cost bias) and never sonnet (gate strength). Every review context
 reviewer sees only the bounded inputs below, never the implementation conversation.
 
 Reviewer INPUT is bounded: the diff + slice brief + deterministic (L0) report + learnings file
-+ targeted reads for receipts. Never whole-repo crawls at review time.
++ the worker's saved prompt-file in evidence (the contract source — never re-pasted into the
+review prompt) + targeted reads for receipts. Start bounded, expand receipt-driven and REPORT
+the expansion. Never whole-repo crawls at review time.
 
 ## 14. Reviewer prompt-pack — paste into every code-review dispatch
+
+Slim by design (ratified 2026-07-16): the pack carries dispatch identity + inputs + verdict
+schema; the LAW lives in §§1-12 of this standard, loaded by the reviewer as its first act —
+field-verified across 3 chips: reviewers read and cite mandated docs. Never re-paste §§2-8
+content into the pack (drift surface).
 
 ~~~text
 You are an INDEPENDENT code reviewer (implementer ≠ reviewer). Verdict bar: does this change
 definitely improve overall system health? Approve net-positive imperfection; reviews verify,
 never generate scope.
 
-Inputs: the diff (fixed SHA), the slice brief, the deterministic L0 report, the repo
-review-learnings file. Read further code ONLY to verify claims (receipts).
+FIRST ACT: read this repo's REVIEW-STANDARD.md §§1-12 and the review-learnings file. They are
+the law of this review — fixed review order, G1-G3 design questions, YAGNI/DRY, severity
+taxonomy, anchor-or-abstain with receipts, and the REJECT checklist (core §4). Do not re-flag
+patterns recorded in the learnings file.
 
-Review in this order, budget attention top-down:
-1 DESIGN — G1: right solution for the WHOLE system (check ADRs/interface contracts/module
-  map), not just this diff? G2: non-trivial decisions carry an alternatives-considered note in
-  the plan/brief (missing = important finding)? G3: does this block a NAMED upcoming
-  milestone/feature (mission DAG)?
-2 CORRECTNESS — brief intent, consumer impact, edge cases, failure paths, concurrency.
-3 SIMPLICITY — YAGNI: new abstraction needs a second NAMED consumer, else speculative;
-  DRY: duplication of an existing symbol = cite it path:line, rule of three;
-  fewest elements: flag what cannot be understood quickly.
-4 TESTS — behavior coverage not line coverage; negative + cross-tenant cases; asserting the
-  mock = test theater.
-5 NAMING/READABILITY. 6 DOCS/CONTRACTS updated with the code.
-NEVER comment style — machine-owned (formatter/linters).
-Then run the REJECT checklist (core §4 AI-slop list): any hit = REJECT.
+Inputs: the diff (fixed SHA), the slice brief/card, the deterministic L0 report, and the
+worker's prompt-file in evidence (the contract is there — not re-pasted here). Read further
+code to verify claims (receipts); start bounded, expand receipt-driven and REPORT what you
+expanded into.
 
-Every finding: `severity(path:line): problem. fix.` severity ∈
-blocking|important|suggestion|nit|question. Anchor to the real diff or file it under a
-`general` bucket — never fake a line. Verify every blocking/important claim against actual
-code before posting and quote the receipt; unverified = speculative, max severity suggestion.
-Do not re-flag patterns recorded in the learnings file.
+Every finding: `severity(path:line): problem. fix.` (severity per §5; anchor to the real diff
+or file under a `general` bucket — never fake a line). Unverified blocking/important claims =
+speculative, max severity suggestion.
 
-Verdict: REJECT if any blocking, or any important unresolved. Otherwise APPROVE (open
-suggestion/nit items listed = LGTM-with-comments; a re-review round is never spent on nits
-alone). Output: verdict · G1-G3 one-liners · findings table · receipts. No praise, no preamble.
+Verdict: REJECT if any blocking, or any important unresolved; else APPROVE
+(LGTM-with-comments legal; a re-review round is never spent on nits alone).
+Output: verdict · G1-G3 one-liners · findings table · receipts. No praise, no preamble.
 ~~~
 
 ## 15. Cadence — overlap rule

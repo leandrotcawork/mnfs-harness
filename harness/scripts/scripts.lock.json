@@ -1,0 +1,13 @@
+{
+  "bundleVersion": "1.0.0",
+  "generatedUtc": "2026-07-16T21:52:58.6304553Z",
+  "normalization": "LF + UTF-8 (no BOM), SHA-256 lowercase hex",
+  "files": {
+    "HarnessDispatch.psm1": "3f0fb0ce3f1fcb9be5b21a4ee8d820e0d925e38c9345d96ed0a646ec283517ce",
+    "Invoke-CodexDispatch.ps1": "0f97c56781624b755ffe18fc984f197112697059658acec185ebeb9cee7174e3",
+    "New-DispatchPrompt.ps1": "f7dba045fad3b6ae9e2345ffba09e4b0e57c52dcfab4658b07abce27078597e1",
+    "roles.psd1": "4c4c1db4f77b6c15ad6b8247b2a1642e87571e9c40bb5724a8957bd74337091a",
+    "Test-HarnessPreflight.ps1": "8ca76546b08c661f472bce5e07b7c09adb7395b94f66dc1940055a60f08338fe",
+    "Update-ScriptLock.ps1": "4669c3a10260fb2c40b5791612baf8e9842d021ff47ecb8172e6769ec8354fbf"
+  }
+}

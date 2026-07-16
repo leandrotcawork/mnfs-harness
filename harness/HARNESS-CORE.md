@@ -231,8 +231,16 @@ Milestone-session obligations, checkable:
    touches — the write-DAG) + a CONTRACT-SATISFIABILITY check (every claimed contract
    path/section diffed against the CURRENT contract state and sibling-track claims; a
    colliding or already-occupied path is a planning defect, not an implementation discovery)
-   + pre-identified additive contract-locks (§3). M-01 field: 2 wasted dispatches + 2
-   escalations were plan-time-detectable contract conflicts.
+   + pre-identified additive contract-locks (§3) + a per-criterion VERIFICATION MAP (every
+   acceptance criterion in the feature brief maps to a named verification command/QA step AND
+   the file(s) that carry it — an unmapped criterion is a planning defect; field M-03: a
+   write-set missing its test file shipped zero tests and cost a full correction cycle).
+   M-01 field: 2 wasted dispatches + 2 escalations were plan-time-detectable contract
+   conflicts. Slice cards use the explicit card schema (`validation_kind` · `commands` ·
+   `expected_artifacts` · `write_set` · `open_questions`); any non-empty `open_questions` =
+   the slice is NOT dispatch-ready — resolve via investigator dispatch first (ratified
+   2026-07-16; supersedes the retired >6-steps/>4-paths split heuristic of the deleted
+   feature-execution contract).
 2. Code slices implemented by dispatched codex workers (Luna high standard / Sol low complex).
    The orchestrating session writes inline ONLY trivial glue (≤ ~10 lines, no new behavior).
 3. Every slice reviewed by an **independent Claude reviewer** before it is merged and before
@@ -245,7 +253,11 @@ Milestone-session obligations, checkable:
    compressed report; the orchestrating session never tree-crawls.
 6. Mechanical work → haiku.
 7. Evidence lists dispatches per slice: planner, implementer, reviewer(s), verdicts. Zero
-   dispatches listed = fails hub acceptance.
+   dispatches listed = fails hub acceptance. Evidence also records the slice's CHANGED-PATH
+   RECONCILIATION: `git diff --name-only` at the slice SHA vs the card's `write_set`, bucketed
+   `declared / changed-undeclared / declared-but-unchanged` — an undeclared path carries a
+   one-line justification or becomes a finding (field M-02: byte-verified file-sets ran 10
+   dispatches with zero scope slip).
 8. Native task board live at all times: in_progress at dispatch, completed only reviewed-green.
 
 **Every code review (slice, dual gate, hub spot-check) follows `REVIEW-STANDARD.md` — BINDING:**
@@ -269,9 +281,112 @@ case where the profile defines tenancy) · permanent stub/nil dependency wired i
 root live path (a stub on a live path is legal ONLY with a dated deferral naming the slice that
 wires the real dependency, or explicit operator authorization — otherwise it is a defect, not a
 placeholder) · duplication of an existing helper/pattern past the rule of three (reviewer cites
-the existing symbol `path:line`; third occurrence must refactor to shared).
+the existing symbol `path:line`; third occurrence must refactor to shared) · a Pass recorded on
+`assumed` or `could-not-run` evidence (§5 evidence types).
 
 **Reviews verify, never generate scope.** New scope wanted = finding for the hub queue.
+
+### Implementer prompt-pack — canonical, versioned (ratified 2026-07-16)
+
+The implementer-side mirror of `REVIEW-STANDARD.md` §14. This block is the ONLY doctrine a
+dispatched implementation worker is guaranteed to see — it binds by being pinned VERBATIM in
+the dispatch prompt (auto-discovered skills never bind; profile denylists apply). Assembly is
+MECHANICAL — file concat via tooling, never retyped from memory (field M-02: hand-copied rule
+blocks drifted mid-mission). The stamp line carries version + SHA-256 of the pack body
+(hash over the body text below the stamp, normalized to LF/UTF-8 — never over the stamp
+itself); the dispatch ledger records `pack_version` + `pack_body_sha256` per dispatch.
+
+~~~text
+impl-pack v1.0.0 · milestone <id> · body-sha256 <hash>
+
+YOU ARE A SLICE IMPLEMENTER. Hard rules:
+- Touch ONLY files in the write_set below. Anything else: stop and report.
+- Failing test FIRST, then implementation, then green. Mocks prove contract shape,
+  never integration.
+- Before writing, answer: G1 — right for the WHOLE system (contracts, module map), not
+  just this file? G2 — non-trivial decision → 1-3 line alternatives-considered note in
+  your report. G3 — does this block a NAMED upcoming milestone/seam?
+- A new abstraction (interface, wrapper, config knob, generic param) requires a SECOND
+  named consumer existing now or in a declared brief. None = do not build it.
+- Duplicating an existing helper/pattern: cite it path:line and reuse; never copy.
+- No blanket recover/try-catch or fallback on integrity-critical reads — unknown ≠
+  zero/default; fail honest.
+- No comment narration, no dead code, no unanchored TODOs; match the module's idiom.
+- Evidence per command: type ran / assumed / could-not-run. Pass ONLY on ran with an
+  artifact path or captured output. Never Pass on assumed or could-not-run.
+- Validation failed? REPRODUCE the failure in isolation first, then fix, then re-run the
+  FULL validation plan. Max ONE fixup this session; second failure = stop, report
+  BLOCKED with the reproduction.
+- Contract/architecture conflict: stop and report. You do not adjudicate.
+- Final report: status · changed paths vs write_set (any undeclared path gets a one-line
+  justification) · commands with evidence types · what you did NOT verify.
+~~~
+
+**Worker-pack kill-list (field-ratified across 3 chips, 2026-07-16):** the implementer pack
+NEVER carries hub event grammar, ladder L0-L4 bindings, REVIEW-LEARNINGS, dual-gate/QA-close
+mechanics, the full truth order (the single line "conflict = stop and report" replaces it),
+or core/profile section numbers — workers obey inline text and precise `path:line` code
+pointers; they never cite sections. Coordination content belongs to the chip, not the worker.
+Environment clauses are scoped to the phases that need them (field M-02: node bootstrap
+pinned only from the first web-touching feature onward).
+
+### Canonical dispatch-prompt architecture (ratified 2026-07-16)
+
+Mandatory block order in every worker dispatch prompt:
+
+1. **Fixed role pack** (above) — byte-identical across every dispatch of the milestone;
+   stamp line first.
+2. **Role/repo bindings** — profile-bound; fixed per milestone.
+3. **Slice card / review delta** — the ONLY variable block, ALWAYS last.
+
+The prefix (blocks 1-2) is FROZEN for the milestone. An urgent mid-milestone change is an
+immutable dated ADDENDUM appended AFTER the variable block, carrying its own body hash and
+recorded per-dispatch in the ledger — the prefix is never edited in place. Addenda fold into
+a pack version bump only at a milestone boundary. Delivery per transport: codex workers get
+the pack INLINE via mechanical concat; Claude reviewer subagents get a short fixed header
+inline plus an explicit read-mandate as their first act (REVIEW-STANDARD §14) —
+field-verified: reviewers read and cite mandated docs; ephemeral codex workers reliably
+follow only inline text and precise `path:lines` code pointers. Skills are NEVER a doctrine
+transport (stale-cache risk, non-deterministic discovery in worktrees, no audit trail of the
+content actually delivered); the saved prompt-file in evidence IS the audit record of exactly
+what the worker received.
+
+### Deterministic lane — code before tokens (ratified 2026-07-16)
+
+Extension of REVIEW-STANDARD §7 to the whole execution plane: anything decidable from
+explicit, versioned inputs by a stable predicate belongs to a SCRIPT, not a prompt — prompt
+assembly, byte hashing, dispatch identity/lifecycle, command invocation + exit capture,
+artifact existence/freshness, schema completeness, fixed-SHA reconciliation, exact path-set
+comparison. Scripts report only what their inputs prove and NAME every dimension not proven —
+structural success never implies correctness, adequacy, ambiguity-resolution, or review
+approval; the phrase "all checks passed" is forbidden, the maximum script verdict is
+`FORM-COMPLETE — merit, truth, adequacy and ambiguity not assessed`. Judgment work (intent,
+architecture fit, behavior, risk, evidence truth beyond captured receipts, competing
+remedies) stays with LLM/operator. A proposed rule that must infer meaning from prose,
+approximate relevance, or encode reviewer taste is not automation — it is deterministic
+theater: advisory at most, or rejected.
+
+First-lot tooling (`harness/scripts/` in the plugin, vendored to the product repo with
+per-file SHA-256 locks; every entrypoint verifies its own hash against the lock before
+acting — mismatch = FAIL CLOSED with an update instruction; an in-flight milestone keeps its
+pinned bundle):
+
+- `Invoke-CodexDispatch.ps1` — role→flags resolved from a data file (`roles.psd1`), stdin
+  closed, prompt from file, tee + `-o` capture, atomic `*.result.json` receipt (PID,
+  timestamps, exit code, output hashes) replacing the bare `.done` sentinel. NEVER
+  auto-re-issues a writing worker — silence or a missing receipt = diagnose and escalate
+  (two writers on one worktree is worse than any hang).
+- `New-DispatchPrompt.ps1` + dispatch registry — mechanical pack assembly (concat + stamp +
+  hash) and dispatch lifecycle `assembled → started → completed/failed/cancelled`. Assembly
+  alone NEVER yields a complete ledger row (a phantom dispatch the acceptance would certify);
+  only the dispatcher promotes to `started`, completion writes the output hashes.
+
+Harness scripts are harness code: a new/changed script is a normal reviewed slice
+(implementer ≠ reviewer; fixture tests covering CRLF/encoding/concurrency/non-zero exits),
+never an in-place mid-milestone hotfix. Later candidates (evidence linter, card-schema
+validator, write-set collision precheck, review-pack builder) are built only after the first
+lot proves itself in the field — the symmetric risk to over-scripting is over-engineering
+the harness itself.
 
 ## 5. Verification ladder — every level from clean state
 
@@ -293,6 +408,12 @@ planning must declare real-integration bindings up front — which seams need li
 they need — so implementation wires real from the start instead of shipping stubs that force
 delaying refactors later. A planned stub is only valid with a dated deferral naming the slice
 that replaces it.
+
+**Evidence types (rescued from the retired feature-execution contract, ratified 2026-07-16):**
+every command, QA step, and artifact in evidence carries a type — `ran` / `assumed` /
+`could-not-run`. A criterion may be recorded Pass ONLY on `ran` with an artifact path or
+captured output; `assumed` and `could-not-run` never yield Pass. Verdicts cite the evidence
+type; a Pass without a receipt is an acceptance defect.
 
 The profile MUST additionally document (as they get ratified): fresh-workspace bootstrap steps
 (hermetic caches, module warms), the integration test-database strategy (isolation guarantees +
@@ -318,6 +439,10 @@ operator authorization per mission Validation Strategy).
 ## 7. Failure protocol
 
 RED at any ladder level → root-cause fix (systematic-debugging) → re-run FULL ladder from L0.
+A worker failing its own quick validation REPRODUCES the failure in isolation before changing
+code, then re-runs its FULL validation plan (never only the failed check); max ONE
+same-session fixup — the second failure is BLOCKED with the reproduction attached
+(implementer-side complement of the reviewer-side rule below).
 Slice fails review 2× → redesign the slice, not a third patch. Invariant/ADR contradiction →
 STOP, `BLOCKED`, operator decides. Budget ceiling → stop, flush state to evidence + task board,
 `BLOCKED` with split proposal. Never: skip hooks, force-push, fake evidence, "fix while here"
