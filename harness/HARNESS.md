@@ -219,6 +219,25 @@ Standard first act in every new chip worktree before any hermetic lane:
 NOT a dep change, no REQUEST needed). `migrations_first=-1` means "build died before migrate
 ran"; warm the cache before diagnosing SQL.
 
+**Integration lane hardening (ratified 2026-07-15, M-01 retrospective):** the lane is
+self-discovering and race-proof by construction — `scripts/harness/Postgres.psm1` globs every
+package with `//go:build integration` tests under `internal/modules/` plus `tests/integration`
+(no hardcoded package list: a new module joins the lane by existing), and `CREATE DATABASE`
+retries until the database provably exists (pg_isready passes during the image's first-boot
+init restart; a 3D000/"database does not exist" on first attempt is that race, not a defect —
+the loop absorbs it). **Session container (implemented 2026-07-15):** `npm run harness:pg:up`
+starts ONE long-lived postgres container per checkout (`mpc-pg-session-<8hex>`, hashed from the
+checkout path — hub and chip worktrees never collide); while it is up,
+`npm run harness:integration` auto-detects and reuses it (`container=session-reuse` in output)
+with a fresh `CREATE DATABASE mpc_test_<32hex>` per run, dropped after — same isolation and
+migration-idempotence proof, no container boot per run (~20s → ~3s overhead). Without a session
+container the lane falls back to per-run ephemeral (`container=ephemeral`). Remove the session
+container at milestone close: `npm run harness:pg:down`. Session state lives in
+`scripts/.runs/pg-session.json` (gitignored; local test container bound to 127.0.0.1). The old
+mpc-goal-harness control-plane modules (Context/Impact/State/Evals) and lanes
+(`context-compile`/`context-validate`/`impact`) were deleted 2026-07-15 — chips get context via
+dispatch prompts and the hub adjudicates collisions; nothing references them.
+
 **Backend non-negotiables re-checked at L0–L2 per touched endpoint:** tenant_id predicate on
 every query · provider payloads at adapters only · unknown never zero/default (ADR-17) ·
 OpenAPI + sdk-runtime same commit · provider writes: resolved linkage, explicit policy/source
