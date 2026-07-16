@@ -100,6 +100,13 @@ Owner: QA Validator
 - Assign every criterion a stable, unique `ID` and never renumber it; feature context packs reference criteria by this ID.
 - Any quality attribute the mission targets for this milestone has ≥1 criterion here, typed `Performance` / `Security` / etc., with a concrete observable target (a number, a status code, or a named control) — never a generic stand-in.
 - `Expected:` names concrete observable values — exact status code, JSON shape/field values, or precise UI location/text. Never use a generic verb as a stand-in for the value: write `from_value='open', to_value='in_progress'`, not "correct from/to"; write "409 in a red banner above the status selector", not "surfaces inline". Banned stand-ins: `correct`, `works`, `proper`, `valid`, `handles`, `inline`.
+- Integration-seam criteria (external provider, DB, third-party API) MUST declare the REAL
+  dependency binding up front: name the seam, the env it needs (creds/VPN/stack), and mark the
+  criterion as live-driven. Stub/mock/fake may satisfy an integration criterion ONLY with
+  explicit operator authorization recorded in the contract, or a dated deferral naming the slice
+  that wires the real dependency. Planning that leaves a seam stubbed without either is a
+  readiness defect — it ships composition stubs that pass hermetic gates and block live
+  validation later.
 - Keep status `Pending` during planning.
 - Use QA Validator as verdict owner.
 - Include retry policy fields without consuming attempts during planning.

@@ -207,7 +207,10 @@ recover/try-catch, fallbacks on integrity-critical reads (unknown ≠ zero — f
 profile may bind this to a named ADR) · idiom mismatch with the surrounding module · dead code /
 commented blocks / unanchored TODOs · hand-rolled platform equivalents · generated-file edits
 (contract-first or nothing) · test theater (asserting the mock; missing negative/cross-tenant
-case where the profile defines tenancy).
+case where the profile defines tenancy) · permanent stub/nil dependency wired into a composition
+root live path (a stub on a live path is legal ONLY with a dated deferral naming the slice that
+wires the real dependency, or explicit operator authorization — otherwise it is a defect, not a
+placeholder).
 
 **Reviews verify, never generate scope.** New scope wanted = finding for the hub queue.
 
@@ -222,6 +225,15 @@ Level SEMANTICS are core; exact commands, ports, and evidence paths are profile 
 | L2 | dev stack up (per profile) · smoke: target routes, error shapes, contract ↔ SDK ↔ handler parity | green, evidence captured |
 | L3 | browser QA persona on the milestone VC Drive blocks | GREEN verdict artifact |
 | L4 | MNFS milestone gate `/milestone-validate <milestone-path> --apply` (cold `milestone-reviewer` crew + QA live-drive vs `validation-contract.md`; only QA passes a milestone) | PASS written to `<milestone-root>/validation-result.md` |
+
+**Integration honesty (operator-ratified 2026-07-15):** validation contracts and tests NEVER
+fall back to stub/mock/fake for an integration seam unless the operator explicitly authorizes
+the substitution. Mocks/fakes prove contract SHAPE only; any criterion that claims integration
+works must be driven against the REAL dependency (live or operator-provisioned env). Mission
+planning must declare real-integration bindings up front — which seams need live proof, what env
+they need — so implementation wires real from the start instead of shipping stubs that force
+delaying refactors later. A planned stub is only valid with a dated deferral naming the slice
+that replaces it.
 
 The profile MUST additionally document (as they get ratified): fresh-workspace bootstrap steps
 (hermetic caches, module warms), the integration test-database strategy (isolation guarantees +
