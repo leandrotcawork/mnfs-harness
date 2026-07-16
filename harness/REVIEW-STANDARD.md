@@ -97,8 +97,9 @@ trusted to address them. A re-review round may not be spent on nits alone.
 
 ## 8. Dual gate — agreement gating (upgrade of core §4 obligation 4)
 
-- Both reviewers (two model families, same fixed SHA, git read-only) emit findings in the §5
-  schema independently.
+- Both reviewers (two model families, same fixed SHA, git read-only, COLD — neither is the
+  session that orchestrated or implemented the work) emit findings in the §5 schema
+  independently.
 - **Merge rule:** finding flagged by BOTH = confirmed at the higher severity. Flagged by ONE at
   `blocking`/`important` = the other model explicitly confirms or refutes it during
   reconciliation (with receipts); still contested = hub adjudicates. Solo `suggestion`/`nit`
@@ -139,7 +140,7 @@ FALSE FAILS: every wrong FAIL costs a full correction round. Frequency decides w
 | Layer | Frequency | Vehicle | Reviewers · model · reasoning | Parallelism |
 |---|---|---|---|---|
 | Slice review | every slice | prompt-pack (§14) into ONE independent reviewer | 1 — Claude subagent, **sonnet**, session-default effort — never a crew | may overlap a DISJOINT next slice (§15) |
-| Dual gate | 1×/milestone + deltas | prompt-pack into both reviewers, dispatched SIMULTANEOUSLY | 2 — **full Opus** (Claude side) + **GPT-5.6 Sol, `--effort medium`** (codex side) | parallel; merge per §8 |
+| Dual gate | 1×/milestone + deltas | prompt-pack into both reviewers, dispatched SIMULTANEOUSLY | 2 — **COLD Opus subagent** (Claude side: clean context, explicit `model=opus`) + **GPT-5.6 Sol, `--effort medium`** (codex side) | parallel; merge per §8 |
 | Artifact gates (★ crews) | 1×/milestone · 1×/mission | plugin rubrics (their own authority) + noise control (§16) | cold Claude crew on **sonnet**; mission readiness (P7) adds the **GPT-5.6 Sol, `--effort high`** dual-model pass | parallel scoped clusters |
 | Hub spot-check | on acceptance (optional) | prompt-pack, git read-only | 1 — Claude subagent, **sonnet** | — |
 
@@ -147,8 +148,11 @@ Model/effort values RESTATE the core §1 model matrix — core §1 is canonical;
 redefines it. Every GPT-side dispatch resolves its flags through the `codex-dispatch` skill
 (role → exact `--model`/`--effort` line); `--effort` is ALWAYS explicit — the global codex
 default is `xhigh` and omitting it silently burns time/cost. Claude reviewer subagents run on
-sonnet (operator ruling — quota preservation); the dual-gate Claude side is the full Opus
-session, never a subagent.
+sonnet (operator ruling — quota preservation; the ruling forbids fable subagents, not opus).
+The dual-gate Claude side is a **COLD Opus subagent** — clean context, explicit `model=opus`
+override, git read-only — NEVER the session that orchestrated the work (self-grade
+anchoring/sunk-cost bias) and never sonnet (gate strength). Every review context is cold:
+reviewer sees only the bounded inputs below, never the implementation conversation.
 
 Reviewer INPUT is bounded: the diff + slice brief + deterministic (L0) report + learnings file
 + targeted reads for receipts. Never whole-repo crawls at review time.
