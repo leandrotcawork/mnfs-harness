@@ -200,6 +200,11 @@ starts. A disjoint slice N+1 (no shared files/seams per the collision axes) MAY 
 while N's review runs. A REJECT on N never invalidates disjoint N+1 work. Serial remains the
 rule for same-file/same-seam sequences.
 
+Within one slice: L0 always PRECEDES review dispatch (§7 — the reviewer consumes the report);
+the L1/test-lane run MAY execute CONCURRENTLY with the review (both consume the same candidate
+diff; field evidence M-01: lanes cost seconds, reviews cost minutes — serializing them buys
+nothing). Both must be green before commit.
+
 ## 16. Artifact-gate (★ crew) noise control
 
 Binds every rubric run (readiness + milestone). The 7★ binary verdict mechanics stay untouched
