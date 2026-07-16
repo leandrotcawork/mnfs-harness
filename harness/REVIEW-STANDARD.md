@@ -136,12 +136,19 @@ third patch (core §7).
 The speed lever is NOT fewer reviewers (parallel reviewers share one wall-clock) — it is fewer
 FALSE FAILS: every wrong FAIL costs a full correction round. Frequency decides weight:
 
-| Layer | Frequency | Vehicle | Reviewers | Parallelism |
+| Layer | Frequency | Vehicle | Reviewers · model · reasoning | Parallelism |
 |---|---|---|---|---|
-| Slice review | every slice | prompt-pack (§14) into ONE independent reviewer (model per core §1 matrix) | 1 — never a crew | may overlap a DISJOINT next slice (§15) |
-| Dual gate | 1×/milestone + deltas | prompt-pack into both reviewers, dispatched SIMULTANEOUSLY | 2 (two model families) | parallel; merge per §8 |
-| Artifact gates (★ crews) | 1×/milestone · 1×/mission | plugin rubrics (their own authority) + noise control (§16) | cold crew per rubric | parallel scoped clusters |
-| Hub spot-check | on acceptance (optional) | prompt-pack, git read-only | 1 | — |
+| Slice review | every slice | prompt-pack (§14) into ONE independent reviewer | 1 — Claude subagent, **sonnet**, session-default effort — never a crew | may overlap a DISJOINT next slice (§15) |
+| Dual gate | 1×/milestone + deltas | prompt-pack into both reviewers, dispatched SIMULTANEOUSLY | 2 — **full Opus** (Claude side) + **GPT-5.6 Sol, `--effort medium`** (codex side) | parallel; merge per §8 |
+| Artifact gates (★ crews) | 1×/milestone · 1×/mission | plugin rubrics (their own authority) + noise control (§16) | cold Claude crew on **sonnet**; mission readiness (P7) adds the **GPT-5.6 Sol, `--effort high`** dual-model pass | parallel scoped clusters |
+| Hub spot-check | on acceptance (optional) | prompt-pack, git read-only | 1 — Claude subagent, **sonnet** | — |
+
+Model/effort values RESTATE the core §1 model matrix — core §1 is canonical; this table never
+redefines it. Every GPT-side dispatch resolves its flags through the `codex-dispatch` skill
+(role → exact `--model`/`--effort` line); `--effort` is ALWAYS explicit — the global codex
+default is `xhigh` and omitting it silently burns time/cost. Claude reviewer subagents run on
+sonnet (operator ruling — quota preservation); the dual-gate Claude side is the full Opus
+session, never a subagent.
 
 Reviewer INPUT is bounded: the diff + slice brief + deterministic (L0) report + learnings file
 + targeted reads for receipts. Never whole-repo crawls at review time.
