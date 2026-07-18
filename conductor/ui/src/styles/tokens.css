@@ -1,0 +1,43 @@
+:root {
+  /* ground */
+  --bg: oklch(0.165 0.012 230);
+  --surface: oklch(0.205 0.014 230);
+  --raised: oklch(0.245 0.016 230);
+  --line: oklch(0.32 0.018 230);
+  /* ink */
+  --ink: oklch(0.93 0.006 210);
+  --ink-muted: oklch(0.72 0.014 210);
+  --ink-faint: oklch(0.56 0.014 210);
+  /* brand */
+  --brand: oklch(0.78 0.10 200);
+  --brand-ink: oklch(0.17 0.02 200);
+  --brand-dim: oklch(0.60 0.08 200);
+  /* tally */
+  --tally-red: oklch(0.62 0.21 25);
+  --tally-green: oklch(0.70 0.15 150);
+  --tally-amber: oklch(0.79 0.13 80);
+  --tally-off: oklch(0.42 0.012 230);
+  /* type */
+  --font-ui: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-data: 'IBM Plex Mono', ui-monospace, monospace;
+  --text-caption: 0.75rem;
+  --text-secondary: 0.8125rem;
+  --text-body: 1rem;
+  --text-sub: 1.1875rem;
+  --text-heading: 1.4375rem;
+  /* space */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --radius: 6px;
+  --radius-lg: 10px;
+  /* z */
+  --z-sticky: 10;
+  --z-overlay: 20;
+  --z-modal: 30;
+  --z-toast: 40;
+}

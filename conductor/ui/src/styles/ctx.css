@@ -1,0 +1,73 @@
+.ctx-panel {
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+  overflow-y: auto;
+  min-height: 0;
+  position: relative;
+}
+.ctx-panel--collapsed { width: 32px; overflow: visible; }
+.ctx-panel__toggle {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  padding: var(--s-2);
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  z-index: 1;
+}
+.ctx-panel__toggle:hover { color: var(--ink); }
+.ctx-panel__body { padding: var(--s-3); }
+.ctx-panel__stack { display: flex; flex-direction: column; gap: var(--s-3); }
+.ctx-panel__empty { padding: var(--s-3); }
+
+.ctx-block {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--s-3);
+}
+.ctx-block--solid { background: var(--raised); }
+.ctx-block__title {
+  font-weight: 600;
+  font-size: var(--text-caption);
+  margin-bottom: var(--s-2);
+}
+.ctx-block__resume {
+  border: 1px solid var(--brand-dim);
+  color: var(--brand);
+  border-radius: var(--radius);
+  padding: var(--s-2) var(--s-3);
+  font-family: var(--font-data);
+  font-size: var(--text-caption);
+}
+.ctx-block__resume:hover { background: var(--brand); color: var(--brand-ink); }
+.ctx-block__resume:disabled { opacity: 0.6; }
+
+.ctx-kv { display: flex; flex-direction: column; gap: var(--s-1); font-size: var(--text-caption); }
+.ctx-kv > div { display: flex; justify-content: space-between; gap: var(--s-2); }
+.ctx-kv dt { color: var(--ink-muted); }
+.ctx-kv dd { margin: 0; color: var(--ink); }
+
+.mini-multiviewer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-top: var(--s-2);
+}
+.minitile {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  padding: 3px var(--s-2);
+  font-size: var(--text-caption);
+}
+.minitile--red { border-color: var(--tally-red); }
+.minitile--green { border-color: var(--tally-green); }
+.minitile--amber { border-color: var(--tally-amber); border-style: dashed; }
+.minitile--off { border-color: var(--tally-off); border-style: dotted; }
+
+.ctx-decision-list { list-style: none; margin: var(--s-2) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-1); }
+.ctx-decision-list button { text-align: left; color: var(--ink-muted); font-size: var(--text-caption); }
+.ctx-decision-list button:hover { color: var(--brand); }

@@ -1,0 +1,20 @@
+{
+  "writer": {
+    "tools": ["Read", "Glob", "Grep", "Write", "Edit", "Bash"],
+    "allowedTools": [],
+    "disallowed": ["Task", "TodoWrite", "WebFetch", "WebSearch", "AskUserQuestion"],
+    "bashMatrix": [["go", "test"], ["go", "build"], ["go", "vet"], ["npm", "test"], ["npm", "run", "test"], ["npm", "run", "lint"], ["npm", "run", "build"], ["npm", "run", "typecheck"], ["git", "--no-pager", "status"], ["git", "--no-pager", "diff"], ["git", "--no-pager", "log"], ["git", "--no-pager", "show"]],
+    "maxTurns": 200,
+    "toolTimeoutMs": 1800000,
+    "modelWaitTimeoutMs": 600000
+  },
+  "reviewer": {
+    "tools": ["Read", "Glob", "Grep", "Bash"],
+    "allowedTools": [],
+    "disallowed": ["Task", "TodoWrite", "WebFetch", "WebSearch", "AskUserQuestion", "Write", "Edit"],
+    "bashMatrix": [["git", "--no-pager", "status"], ["git", "--no-pager", "diff"], ["git", "--no-pager", "log"], ["git", "--no-pager", "show"]],
+    "maxTurns": 60,
+    "toolTimeoutMs": 600000,
+    "modelWaitTimeoutMs": 600000
+  }
+}

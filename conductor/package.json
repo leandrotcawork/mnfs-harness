@@ -1,0 +1,16 @@
+{
+  "name": "mnfs-conductor",
+  "version": "0.1.0-beta",
+  "description": "Beta headless execution plane for the hub-and-chips harness (Agent SDK)",
+  "type": "module",
+  "private": true,
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "viewer": "node bin/conductor.mjs viewer"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.3.212",
+    "zod": "^4.0.0"
+  }
+}

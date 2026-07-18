@@ -1,0 +1,10 @@
+.tally-dot {
+  display: inline-block;
+  border-radius: 50%;
+  flex: none;
+  transition: background-color 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.tally-dot--red { background: var(--tally-red); }
+.tally-dot--green { background: var(--tally-green); }
+.tally-dot--amber { background: var(--tally-amber); }
+.tally-dot--off { background: var(--tally-off); }

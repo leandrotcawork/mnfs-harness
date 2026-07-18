@@ -1,0 +1,21 @@
+.density-dial {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.density-dial__opt {
+  padding: var(--s-1) var(--s-3);
+  font-family: var(--font-data);
+  font-size: var(--text-caption);
+  color: var(--ink-muted);
+  border-right: 1px solid var(--line);
+}
+.density-dial__opt:last-child { border-right: none; }
+.density-dial__opt:hover { color: var(--ink); background: var(--raised); }
+.density-dial__opt--active {
+  background: var(--brand);
+  color: var(--brand-ink);
+  font-weight: 600;
+}
+.density-dial__opt--active:hover { background: var(--brand); color: var(--brand-ink); }
