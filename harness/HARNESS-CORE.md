@@ -41,7 +41,7 @@ a schema, not a form) and grow from field findings, exactly like mission evidenc
 | **Implement worker (complex)** | **GPT-5.6 Sol, low reasoning** via `/codex:rescue` | Complex slices (state machines, pollers, envelope gates, tricky SQL) | — |
 | **Implement worker (fallback)** | **Claude sonnet subagent** | Sanctioned fallback implementer when codex is unavailable (broken sandbox, quota) or the operator directs — same plan, TDD, slice-review, and ledger rules apply unchanged; not a logged deviation (ratified 2026-07-16; field-proven M-01 slices 8-12, gate-passing) | Being the default while codex works |
 | **Investigator / bulk reads** | **GPT-5.6 Luna, medium reasoning** via codex subagent (default); haiku investigator allowed for trivial repo greps | Find files, read/summarize, return compressed report — offloads Opus context AND Claude quota | Suggesting fixes beyond the report |
-| **Per-slice reviewer** | Independent Claude reviewer subagent (sonnet) | Reviews each slice before the next starts; implementer ≠ reviewer, always | Generating new scope |
+| **Per-feature reviewer (adversarial)** | Independent Claude reviewer subagent (sonnet) | ONE adversarial review per FEATURE (all its slices together) before the feature CLOSES and before any DEPENDENT feature starts; emits a correction plan, not a per-slice gate. Inter-slice guard = failing-test-first per slice (P3). Implementer ≠ reviewer, always (D-51, 2026-07-18) | Generating new scope; per-slice gating (superseded 2026-07-18) |
 | **Final dual gate** | **COLD Opus subagent review (clean context, explicit `model=opus`) + GPT-5.6 Sol medium review** (both independent, same fixed SHA; NEVER the orchestrating session — self-grade bias) | Milestone-end diff review per §4 obligation 4 (canonical statement) | — |
 | **Mission co-planner** | **GPT-5.6 Sol, medium** via `/codex:rescue` | Planning P3: BLIND counter-proposal from frozen P0–P2 evidence — never sees Claude's candidate | Seeing Claude's draft; writing artifacts |
 | **Mission decomposition auditor** | **GPT-5.6 Sol, medium** via `/codex:rescue` | Planning P5: audits DAG edges, six-axis disjointness, contract propagation, brief density | New scope; implementation planning |
@@ -67,6 +67,12 @@ Instantiation: the roles ship as plugin agent definitions (`harness/agents/hub-o
 `hub-scribe.md`, `hub-analyst.md`) — spawn via the Agent tool with that subagent type; the
 agent definition IS the pinned role prompt (audit record), and the hub's per-task SendMessage
 text is the dispatch prompt of record for that task.
+
+**Scribe cost rule (D-51, ratified 2026-07-18):** the hub files a SINGLE-LINE ledger row /
+status flip DIRECTLY (append + branch-guard, ~2-3k tokens) — hub-scribe is for BATCHES only. A
+resume-forever scribe re-loads its whole transcript on every continuation; field MIS-004: a
+1-line filing cost ~64k tokens and the scribe then died on a lost transcript. Delegate typing
+when it is a batch; type it yourself when it is one line.
 
 Crew agents are PERSISTENT within a hub session: spawn each once, then continue the SAME
 agent via SendMessage (context intact — ops keeps stack state, scribe keeps ledger format,
@@ -110,7 +116,7 @@ slower/costlier).
   limits and MANGLES QUOTING SILENTLY (field-verified M-01: a truncated reviewer prompt still
   emits a confident verdict).
 
-**Ledger rule — Claude-side workers (Agent-tool subagents: per-slice reviewers, cold Opus
+**Ledger rule — Claude-side workers (Agent-tool subagents: per-feature adversarial reviewer, cold Opus
 gate, mechanical):** no OS log exists, so the ledger row is written AT DISPATCH TIME, before
 reading the result — role, model, effort, prompt-pack file path — then completed with the
 verdict/output artifact path. Prompt-packs and verdicts are files on disk; rows anchor to
@@ -144,7 +150,10 @@ P2 PLAN      per feature: GPT-5.6 Sol medium plan via /codex:rescue against feat
              + owning IC(s); plan = slice cards (goal, files, failing-test-first, done criteria)
 P3 IMPLEMENT per slice: codex worker (Luna high standard / Sol low complex) — failing test
              first, green, commit per green slice on the worktree branch
-P4 REVIEW    per slice: independent Claude reviewer BEFORE next slice (anti-slop checklist §4)
+P4 REVIEW    per FEATURE: ONE independent adversarial Claude reviewer over all the feature's
+             slices together (anti-slop checklist §4), BEFORE the feature closes and any
+             dependent feature starts; emits a correction plan. Inter-slice guard =
+             failing-test-first per slice (D-51 token-economy amendment 2026-07-18)
 P5 VERIFY    ladder L0→L2 (§5, commands per profile) from clean state, run by the milestone session
 P6 DUAL GATE per §4 obligation 4 (canonical): Opus + Sol medium on the fixed-SHA diff
 P7 QA        milestone-close QA: LIVE-DRIVE by a fresh persona vs validation-contract.md
@@ -224,8 +233,8 @@ parent deadlocks. The artifact is Agent/Task routing, NOT parallelism itself. Ru
   teed to a scratchpad log, `-o` last-message file, `.done` sentinel) completes to the
   DISPATCHING session's own loop (field-verified 2026-07-15) — allowed intra-milestone,
   including backgrounded, and MANDATED for long dispatches per §1; subject to: one writer per
-  seam still holds; every worker in the dispatch ledger; slice review before any dependent
-  slice starts.
+  seam still holds; every worker in the dispatch ledger; per-feature adversarial review before
+  any dependent feature closes (failing-test-first guards the inter-slice steps, §4).
 A milestone whose internal parallelism needs a second WRITER on a shared seam still emits
 `SPLIT-REQUEST`; the hub adjudicates against the collision matrix and forks a sibling worktree
 if clean.
@@ -296,17 +305,31 @@ Milestone-session obligations, checkable:
    step. A seam discovered at implement time is a planning defect (field MIS-004 M-04: 4
    held slices + 4 hub round-trips, all plan-time-detectable, all grant-shaped).
 2. Code slices implemented by dispatched codex workers (Luna high standard / Sol low complex).
-   The orchestrating session writes inline ONLY trivial glue (≤ ~10 lines, no new behavior).
-3. Every slice reviewed by an **independent Claude reviewer** before it is merged and before
-   any DEPENDENT slice starts; a disjoint next slice may be implemented while the review runs
-   (REVIEW-STANDARD §15 overlap rule). Implementer ≠ reviewer, non-negotiable.
+   When codex is unavailable (broken sandbox, quota) or the operator directs, slices go to the
+   **Claude sonnet fallback WORKER** (§1) — a dispatched subagent, NOT the orchestrating session
+   turning implementer. The orchestrating session writes inline ONLY trivial glue (≤ ~10 lines,
+   no new behavior); that ceiling is absolute regardless of codex availability. Field MIS-004
+   wave B: with codex on quota-wall, chip mains that self-implemented drove 60–78% of chip
+   output through the Opus orchestrator (5× the cost of a sonnet worker) — a contingency
+   anti-pattern, not an architecture. The fallback path keeps implementation OFF the orchestrator.
+3. **Per-feature adversarial review (D-51 token-economy amendment, ratified 2026-07-18):** ONE
+   independent Claude reviewer reviews ALL of a feature's slices together before the feature is
+   merged and before any DEPENDENT feature starts, emitting a correction plan (not a per-slice
+   gate). The inter-slice guard is failing-test-first per slice (P3): each slice lands green
+   against its own test; the adversarial feature review is where cross-slice design/correctness
+   is judged. A disjoint next feature may be implemented while a feature's review runs
+   (REVIEW-STANDARD §15 overlap rule). Implementer ≠ reviewer, non-negotiable. Rationale:
+   per-slice cold review was redundant with the P6 cold dual gate + P7 live QA (field: M-01
+   round-1 cold crew of 5 found ZERO defects, the live drive found the real ones) — this keeps
+   the adversarial catch while cutting review passes. **P6 dual gate + P7 QA are UNCHANGED.**
 4. **Dual gate at CLOSED:** full Opus review + independent GPT-5.6 Sol medium review (git
    read-only: diff/show/log — never checkout/apply/stash) on the fixed-SHA milestone diff.
    `CLOSED` only after BOTH clear; disagreement = both verdicts + reconciliation in the event.
 5. Bulk reads/inventory → Luna-medium codex investigator (or haiku for trivial greps) returning
    compressed report; the orchestrating session never tree-crawls.
 6. Mechanical work → haiku.
-7. Evidence lists dispatches per slice: planner, implementer, reviewer(s), verdicts. Zero
+7. Evidence lists dispatches: per-feature planner + per-slice implementer(s); per-feature
+   adversarial reviewer with its verdict + correction plan; dual-gate verdicts. Zero
    dispatches listed = fails hub acceptance. Evidence also records the slice's CHANGED-PATH
    RECONCILIATION: `git diff --name-only` at the slice SHA vs the card's `write_set`, bucketed
    `declared / changed-undeclared / declared-but-unchanged` — an undeclared path carries a
@@ -321,8 +344,8 @@ notes on non-trivial decisions), Beck simplicity rules (YAGNI + DRY rule-of-thre
 severity on every finding (`blocking|important|suggestion|nit|question` + anchored `path:line`),
 anchor-or-abstain with receipts, deterministic pre-pass before judgment, dual-gate agreement
 merge, delta-only re-review, learnings memory, ≤~300-line slices. Execution model per
-REVIEW-STANDARD §13-§16: prompt-pack dispatch (one reviewer per slice, never a crew; dual gate
-dispatched simultaneously), disjoint-slice overlap cadence, artifact-gate (★ crew) noise
+REVIEW-STANDARD §13-§16: prompt-pack dispatch (one adversarial reviewer per FEATURE, never a
+crew; dual gate dispatched simultaneously), disjoint-feature overlap cadence, artifact-gate (★ crew) noise
 control (FAIL-restraint, advisory cap, learnings suppression).
 
 **AI-slop checklist — any hit = REJECT the slice:** speculative abstraction / one-impl
@@ -519,6 +542,30 @@ milestone/feature artifacts, evidence files, task board, memory index — unwrit
 happen. Commit per green slice = crash-recovery contract. Sessions open only their listed
 context files; bulk reads via investigator. Hub self-compacts at ~200k tokens after flushing
 durable state.
+
+**Fresh session per PHASE (D-51 token-economy amendment, ratified 2026-07-18):** a chip does
+not live in one monolithic session for the whole milestone. Phase clusters reboot into fresh
+sessions, handing off ONLY through the durable artifacts above: P2 planning → P3 implementation
+→ P5 verify / P6 dual gate → P7 QA (QA is already a fresh persona). Field forensics (MIS-004
+wave B, `.mnfs/MIS-004-mvp-demo/research/token-economy-analysis.md`): a single-session chip
+carried ~130k tokens of context on EVERY API call (doctrine + mission artifacts + board + full
+turn history), and cache-read at that context was ≥50% of chip cost. A phase reboot pays a
+one-time cache-write far smaller than the monolith's accumulated per-call cache-read. Nothing
+of substance may live only in session memory across a phase boundary — the artifacts are the
+handoff.
+
+**Turn hygiene (D-51):** batch shell commands rather than one-per-call; cap tool-result bytes
+(head_limit / quiet flags / targeted reads — never whole-repo dumps at judgment time);
+investigators return a compressed table, not raw file bodies; a session's own ledger/notes are
+append-only (never re-read the whole file each turn). Field: MIS-004 chips ran 430–640 tool
+calls injecting 0.9–1.4M chars of tool-result and re-read the same ledger 9× — most of it
+compressible without losing signal.
+
+**A/B measurement (D-51):** the token regime is instrumented. Baseline = MIS-004 wave B; wave C
+runs amendments 2/3 + fresh-session + turn-hygiene and is measured the same way (dedupe usage by
+message.id). Targets: main-output share <35% · mean ctx/call <80k · tool calls/phase <300.
+Hitting the targets promotes this package to an upstream mnfs-harness amendment with the data as
+evidence.
 
 **Operator visibility (recommended, not obligatory):** a session running multiple OS-process
 workers may serve a local live dashboard (pattern: scratchpad `live-server.mjs`, bound to

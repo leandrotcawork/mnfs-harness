@@ -1,7 +1,9 @@
-# Review Standard — code review layers (slice review · dual gate · hub spot-check)
+# Review Standard — code review layers (feature review · dual gate · hub spot-check)
 
 **Layer:** METHOD (binds with `HARNESS-CORE.md` §4; referenced by it). Applies to every CODE
-review dispatch: per-slice reviewer, dual-gate reviewers, hub acceptance spot-check. The
+review dispatch: per-feature adversarial reviewer, dual-gate reviewers, hub acceptance
+spot-check. Per-slice cold review was superseded 2026-07-18 (D-51 token-economy amendment) by
+ONE adversarial review per FEATURE + failing-test-first as the inter-slice guard. The
 artifact gates (mission readiness rubric, milestone review rubric, qa-validator passes) keep
 their own binary contract-compliance rubrics — this standard does not replace them.
 
@@ -167,7 +169,7 @@ FALSE FAILS: every wrong FAIL costs a full correction round. Frequency decides w
 
 | Layer | Frequency | Vehicle | Reviewers · model · reasoning | Parallelism |
 |---|---|---|---|---|
-| Slice review | every slice | prompt-pack (§14) into ONE independent reviewer | 1 — Claude subagent, **sonnet**, session-default effort — never a crew | may overlap a DISJOINT next slice (§15) |
+| Feature review (adversarial) | every feature (all its slices together) | prompt-pack (§14) into ONE independent reviewer | 1 — Claude subagent, **sonnet**, session-default effort — never a crew | may overlap a DISJOINT next feature (§15); inter-slice guard = failing-test-first |
 | Dual gate | 1×/milestone + deltas | prompt-pack into both reviewers, dispatched SIMULTANEOUSLY | 2 — **COLD Opus subagent** (Claude side: clean context, explicit `model=opus`) + **GPT-5.6 Sol, `--effort medium`** (codex side) | parallel; merge per §8 |
 | Artifact gates (★ crews) | 1×/milestone · 1×/mission | plugin rubrics (their own authority) + noise control (§16) | cold Claude crew on **sonnet**; mission readiness (P7) adds the **GPT-5.6 Sol, `--effort high`** dual-model pass | parallel scoped clusters |
 | Hub spot-check | on acceptance (optional) | prompt-pack, git read-only | 1 — Claude subagent, **sonnet** | — |
@@ -182,7 +184,7 @@ override, git read-only — NEVER the session that orchestrated the work (self-g
 anchoring/sunk-cost bias) and never sonnet (gate strength). Every review context is cold:
 reviewer sees only the bounded inputs below, never the implementation conversation.
 
-Reviewer INPUT is bounded: the diff + slice brief + deterministic (L0) report + learnings file
+Reviewer INPUT is bounded: the feature diff (all its slices) + feature brief and slice cards + deterministic (L0) report + learnings file
 + the worker's saved prompt-file in evidence (the contract source — never re-pasted into the
 review prompt) + targeted reads for receipts. Start bounded, expand receipt-driven and REPORT
 the expansion. Never whole-repo crawls at review time.
@@ -204,8 +206,9 @@ the law of this review — fixed review order, G1-G3 design questions, YAGNI/DRY
 taxonomy, anchor-or-abstain with receipts, and the REJECT checklist (core §4). Do not re-flag
 patterns recorded in the learnings file.
 
-Inputs: the diff (fixed SHA), the slice brief/card, the deterministic L0 report, and the
-worker's prompt-file in evidence (the contract is there — not re-pasted here). Read further
+Inputs: the feature diff (fixed SHA, all its slices), the feature brief + slice cards, the
+deterministic L0 report, and the workers' prompt-files in evidence (the contract is there — not
+re-pasted here). You review the feature's slices TOGETHER and emit a correction plan. Read further
 code to verify claims (receipts); start bounded, expand receipt-driven and REPORT what you
 expanded into.
 
@@ -220,15 +223,20 @@ Output: verdict · G1-G3 one-liners · findings table · receipts. No praise, no
 
 ## 15. Cadence — overlap rule
 
-Slice N's review must be green before slice N is MERGED and before any slice that DEPENDS on N
-starts. A disjoint slice N+1 (no shared files/seams per the collision axes) MAY be implemented
-while N's review runs. A REJECT on N never invalidates disjoint N+1 work. Serial remains the
-rule for same-file/same-seam sequences.
+Review cadence is PER FEATURE (D-51 token-economy amendment, 2026-07-18). Feature F's
+adversarial review must be green before F is MERGED and before any feature that DEPENDS on F
+starts. A disjoint feature G (no shared files/seams per the collision axes) MAY be implemented
+while F's review runs. A REJECT on F never invalidates disjoint G work. Serial remains the rule
+for same-file/same-seam sequences.
 
-Within one slice: L0 always PRECEDES review dispatch (§7 — the reviewer consumes the report);
-the L1/test-lane run MAY execute CONCURRENTLY with the review (both consume the same candidate
-diff; field evidence M-01: lanes cost seconds, reviews cost minutes — serializing them buys
-nothing). Both must be green before commit.
+Within a feature, the SLICES are NOT each cold-reviewed. The inter-slice guard is
+failing-test-first (core §4 P3): every slice lands green against its own test before the next
+slice starts; the adversarial review then judges all the feature's slices together and emits a
+correction plan. This removes the per-slice cold-review pass (redundant with the P6 cold dual
+gate + P7 live QA) while keeping the adversarial catch. Per-slice L0/L1 still apply: L0 PRECEDES
+any review dispatch (§7 — the reviewer consumes the report); the L1/test-lane run MAY execute
+CONCURRENTLY with the review (both consume the same candidate diff; field M-01: lanes cost
+seconds, reviews cost minutes — serializing buys nothing). Both green before commit.
 
 ## 16. Artifact-gate (★ crew) noise control
 

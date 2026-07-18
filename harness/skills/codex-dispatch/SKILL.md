@@ -55,7 +55,8 @@ PowerShell shape:
 ```
 
 Every worker still lands in the dispatch ledger (row points at the `.log` + `.last.md`);
-slice review before any dependent slice starts.
+per-feature adversarial review before any dependent feature closes (failing-test-first guards
+the inter-slice steps — core §4, D-51).
 
 ## Path 2 — companion `/codex:rescue` (short dispatches)
 

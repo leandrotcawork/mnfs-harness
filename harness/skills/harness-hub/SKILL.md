@@ -76,8 +76,10 @@ role and sequences the loop; never restate doctrine from memory, read it.
 
 The hub's context is the mission's scarcest resource. Delegate to the fixed crew (Agent tool,
 sync, sonnet/haiku; PERSISTENT — spawn once, continue via SendMessage, never cold per task): **hub-ops** (ladder runs, stack rebuild/re-point, governance lane,
-container housekeeping), **hub-scribe** (files hub-authored ledger rows/status flips/commits —
-the hub writes the text, the scribe types it), **hub-analyst** (read-only evidence checks,
+container housekeeping), **hub-scribe** (files hub-authored ledger rows/status flips/commits in
+BATCHES — the hub writes the text, the scribe types it; but a SINGLE-LINE row/flip the hub
+files DIRECTLY, ~2-3k tokens vs a ~64k resume-forever scribe continuation — D-51 cost rule,
+core §1), **hub-analyst** (read-only evidence checks,
 git-READ-ONLY spot-checks, salvage prep). Boundaries bind verbatim from core §1: crew never
 pushes/merges/authors doctrine/answers chips/ratifies; anomalies return to the hub after ONE
 attempt. Rulings, event replies, acceptance verdicts, collision calls = hub only. Rule of
