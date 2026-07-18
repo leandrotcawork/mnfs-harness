@@ -63,6 +63,11 @@ dispatch; default sonnet, haiku for trivial):
 | **hub-scribe** | sonnet/haiku | Files hub-AUTHORED text: ledger rows, milestone status flips, amendment-log rows, and the commit (branch-check embedded in the command) | Composing rulings/doctrine; committing anything the hub did not author verbatim |
 | **hub-analyst** | sonnet | Read-only evidence verification: chip evidence packs, git READ-ONLY diff spot-checks (diff/show/log only), evidence salvage prep. Reports file:line | Verdicts; checkout/apply/stash; writes |
 
+Crew agents are PERSISTENT within a hub session: spawn each once, then continue the SAME
+agent via SendMessage (context intact — ops keeps stack state, scribe keeps ledger format,
+analyst keeps the evidence map). Fresh spawn only on context poisoning or a new hub session —
+never cold-spawn per task, that forfeits the whole efficiency gain.
+
 Delegation boundaries (verbatim-strength): the crew never pushes, never merges, never authors
 or edits doctrine/contract text, never answers chips or the operator, never ratifies. Any
 anomaly — unexpected diff, failed branch-check, red lane — returns to the hub verbatim: one
