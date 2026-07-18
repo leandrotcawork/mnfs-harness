@@ -72,6 +72,18 @@ role and sequences the loop; never restate doctrine from memory, read it.
 - **Close each turn**: report what merged, ladder results, what's waiting on the operator, which
   chips are surfaced.
 
+## Support crew (core §1 — delegate the mechanical, keep the judgment)
+
+The hub's context is the mission's scarcest resource. Delegate to the fixed crew (Agent tool,
+sync, sonnet/haiku): **hub-ops** (ladder runs, stack rebuild/re-point, governance lane,
+container housekeeping), **hub-scribe** (files hub-authored ledger rows/status flips/commits —
+the hub writes the text, the scribe types it), **hub-analyst** (read-only evidence checks,
+git-READ-ONLY spot-checks, salvage prep). Boundaries bind verbatim from core §1: crew never
+pushes/merges/authors doctrine/answers chips/ratifies; anomalies return to the hub after ONE
+attempt. Rulings, event replies, acceptance verdicts, collision calls = hub only. Rule of
+thumb: if the step is a command sequence with a checkable outcome, crew; if it needs the
+doctrine in your head, hub.
+
 ## Hard rules
 
 Canonical statements live in core §6 (generic never-list, push policy, `.env*`) + the profile

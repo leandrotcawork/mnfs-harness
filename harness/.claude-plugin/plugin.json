@@ -1,6 +1,6 @@
 {
   "name": "harness",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Hub-and-chips execution engine: dispatch hub boot (harness-hub), milestone chip protocol (harness-worker), profile bootstrap (harness-init), the codex role-to-flags resolver (codex-dispatch), and the deterministic dispatch lane (scripts/: prompt assembler, codex dispatcher, preflight, hash-locked bundle). Doctrine = HARNESS-CORE.md (method; vendor to docs/HARNESS-CORE.md at boundaries) + per-repo profile from PROFILE-TEMPLATE.md (docs/HARNESS-PROFILE.md) + the active mission's Parallel Execution Plan.",
   "author": {
     "name": "leandrotcawork"

@@ -52,6 +52,26 @@ a schema, not a form) and grow from field findings, exactly like mission evidenc
 Concurrency: bounded by operator attention (chips) + ≤15 workers per session. The top-tier
 frontier model (e.g. Fable) is never a worker.
 
+**Hub support crew (ratified 2026-07-18):** the hub runs on the top-tier model; its context
+and tokens are the mission's scarcest resource. The hub adjudicates and orchestrates —
+mechanical lanes are delegated to a small fixed crew of cheap subagents (Agent tool, sync
+dispatch; default sonnet, haiku for trivial):
+
+| Crew role | Model | Does | Never does |
+|---|---|---|---|
+| **hub-ops** | sonnet | Post-merge ladder runs, dev-stack rebuild/re-point, governance-lane runs in the clean worktree, session-container housekeeping. Returns exit codes + output tails verbatim | Interpreting policy; deciding whether a red lane blocks |
+| **hub-scribe** | sonnet/haiku | Files hub-AUTHORED text: ledger rows, milestone status flips, amendment-log rows, and the commit (branch-check embedded in the command) | Composing rulings/doctrine; committing anything the hub did not author verbatim |
+| **hub-analyst** | sonnet | Read-only evidence verification: chip evidence packs, git READ-ONLY diff spot-checks (diff/show/log only), evidence salvage prep. Reports file:line | Verdicts; checkout/apply/stash; writes |
+
+Delegation boundaries (verbatim-strength): the crew never pushes, never merges, never authors
+or edits doctrine/contract text, never answers chips or the operator, never ratifies. Any
+anomaly — unexpected diff, failed branch-check, red lane — returns to the hub verbatim: one
+attempt, no self-retry loops. Decisions, rulings, event replies, collision adjudication, and
+acceptance verdicts stay in the hub session, always. One-writer-per-seam is preserved: the
+crew is the hub's serialized hands, never parallel writers on a shared seam. Ledger rule
+unchanged: crew dispatches that produce ledger-relevant artifacts get their row written by
+the hub (or via hub-scribe) at dispatch time.
+
 **Codex dispatch paths (ruling 2026-07-16, M-01 escalation):** two legal paths, chosen by
 expected duration. Role → exact flags/path: use the `codex-dispatch` skill — never retype the
 matrix from memory, and NEVER omit effort (global codex default is `xhigh`: silently
