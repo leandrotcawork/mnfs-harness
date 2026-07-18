@@ -105,6 +105,12 @@ trusted to address them. A re-review round may not be spent on nits alone.
   reconciliation (with receipts); still contested = hub adjudicates. Solo `suggestion`/`nit`
   pass through unconfirmed, marked single-source.
 - Reconciliation is recorded in the CLOSED event: both verdicts + the merge table.
+- **Second-family gate is REFUTATION-framed and targeted (ratified 2026-07-18):** its prompt
+  priorities, in order — (1) verbatim contract-clause text diffed against code behavior,
+  (2) write-set/ownership violations, (3) reachable-but-untested paths. It is NOT a second
+  general review; breadth belongs to the first-family full pass. Field MIS-004 M-02 P6: the
+  general gate PASSed a milestone whose code silently dropped an explicit contract clause —
+  the targeted refuter caught it.
 
 ## 9. Incremental re-review — delta only, never re-litigate
 
@@ -119,6 +125,15 @@ chips); a resumed reviewer verifying only the remedy costs a fraction (4× field
 Rule: remedy delta → resume the SAME reviewer (verify remedy + receipts only); new slice,
 dead reviewer, or invalidated base → fresh cold dispatch on bounded inputs. A dead reviewer's
 transcript is NEVER re-hydrated (field: 5 post-529 re-hydrations were pure waste).
+
+**Dual-gate disagreement→fix cycles re-gate the DELTA (ratified 2026-07-18):** when the §8
+gate disagrees and the fix lands, BOTH gates re-verdict the fix delta plus resolution of the
+original finding — never the full milestone diff again; alive reviewers resume retained
+context per the remedy rule above. A full cold re-pass of both gates is required only when:
+the fix touches contract surface beyond the finding, the changed set exceeds the finding's
+files, or the same finding fails a second consecutive round. Field MIS-004 M-02: the fix was
+~10 lines + tests; a full-branch double cold re-pass would have re-read the entire milestone
+diff to validate it.
 
 ## 10. Learnings memory — teach it once
 

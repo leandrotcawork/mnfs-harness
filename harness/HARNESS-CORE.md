@@ -155,7 +155,12 @@ requirement (closures listing zero planner/implementer/reviewer dispatches fail 
 (d) task-board obligation; (e) comms contract (`HUB_SESSION_ID` + title-match fallback); (f) the
 milestone's mission paths (`.mnfs/<mission>/<milestone>/milestone.md`, its
 `validation-contract.md`, feature briefs, owning ICs) and accepted base SHA; (g) its
-collision-matrix ownership (exclusive files, contract-lock status, migration block); (h) skill
+collision-matrix ownership (exclusive files, contract-lock status, migration block) PLUS
+pre-authorized narrow grants for the track's predictable seams — its own composition-wiring
+region, its own route's shell-test case, its own SDK domain block; additive-only, released at
+CLOSED, diff called out in the payload — so predictable seam needs don't round-trip as
+REQUESTs (ratified 2026-07-18; field M-04: 3 of 4 escalations were grant-shaped and
+plan-predictable); (h) skill
 pin: name the binding doctrine files (core + profile paths) and the profile's superseded-protocol
 denylist — propagated verbatim into every nested worker dispatch (field finding: worker
 skill-discovery auto-resolved to a stale skill — never rely on on-disk skill discovery in
@@ -240,7 +245,14 @@ Milestone-session obligations, checkable:
    `expected_artifacts` · `write_set` · `open_questions`); any non-empty `open_questions` =
    the slice is NOT dispatch-ready — resolve via investigator dispatch first (ratified
    2026-07-16; supersedes the retired >6-steps/>4-paths split heuristic of the deleted
-   feature-execution contract).
+   feature-execution contract). **+ a SEAM-CLOSURE CHECKLIST (ratified 2026-07-18):** the
+   plan explicitly closes, per feature, every predictable cross-cutting seam — composition
+   root wiring for new services/handlers, shell/router tests asserting placeholders the
+   feature replaces, SDK client surface (methods, not just types), API spec, and any
+   governance/registry entry — each either inside a granted write-set, covered by a
+   pre-authorized narrow grant (§2 chip-prompt item g), or named as a hub-owned post-merge
+   step. A seam discovered at implement time is a planning defect (field MIS-004 M-04: 4
+   held slices + 4 hub round-trips, all plan-time-detectable, all grant-shaped).
 2. Code slices implemented by dispatched codex workers (Luna high standard / Sol low complex).
    The orchestrating session writes inline ONLY trivial glue (≤ ~10 lines, no new behavior).
 3. Every slice reviewed by an **independent Claude reviewer** before it is merged and before
@@ -414,6 +426,14 @@ every command, QA step, and artifact in evidence carries a type — `ran` / `ass
 `could-not-run`. A criterion may be recorded Pass ONLY on `ran` with an artifact path or
 captured output; `assumed` and `could-not-run` never yield Pass. Verdicts cite the evidence
 type; a Pass without a receipt is an acceptance defect.
+
+**PILOT — selective orchestrator re-verify (ratified 2026-07-18, pilot scope set per
+mission):** when an implementer's evidence marks a lane `ran` with captured output, the
+orchestrating session re-runs only the lanes marked `assumed`/`could-not-run` plus ONE
+spot-check lane of its choice, instead of re-running every lane per slice; full re-run
+remains mandatory at feature close and milestone close (the L0 full-suite backstop is never
+waived). Promote to standing rule only after a mission closes with zero spot-check
+divergences; any divergence ends the pilot and reverts to full per-slice re-runs.
 
 The profile MUST additionally document (as they get ratified): fresh-workspace bootstrap steps
 (hermetic caches, module warms), the integration test-database strategy (isolation guarantees +
