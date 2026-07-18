@@ -108,7 +108,10 @@ trusted to address them. A re-review round may not be spent on nits alone.
 - **Second-family gate is REFUTATION-framed and targeted (ratified 2026-07-18):** its prompt
   priorities, in order — (1) verbatim contract-clause text diffed against code behavior,
   (2) write-set/ownership violations, (3) reachable-but-untested paths. It is NOT a second
-  general review; breadth belongs to the first-family full pass. Field MIS-004 M-02 P6: the
+  general review; breadth belongs to the first-family full pass. Known trade-off: defects
+  outside these three classes lose the second confirmation net — if the first-family pass
+  returns thin (few/no findings on a large diff), the refuter MAY extend to general breadth
+  and must say it did. Field MIS-004 M-02 P6: the
   general gate PASSed a milestone whose code silently dropped an explicit contract clause —
   the targeted refuter caught it.
 
@@ -129,11 +132,14 @@ transcript is NEVER re-hydrated (field: 5 post-529 re-hydrations were pure waste
 **Dual-gate disagreement→fix cycles re-gate the DELTA (ratified 2026-07-18):** when the §8
 gate disagrees and the fix lands, BOTH gates re-verdict the fix delta plus resolution of the
 original finding — never the full milestone diff again; alive reviewers resume retained
-context per the remedy rule above. A full cold re-pass of both gates is required only when:
-the fix touches contract surface beyond the finding, the changed set exceeds the finding's
-files, or the same finding fails a second consecutive round. Field MIS-004 M-02: the fix was
-~10 lines + tests; a full-branch double cold re-pass would have re-read the entire milestone
-diff to validate it.
+context per the remedy rule above. This is a DELIBERATE, bounded exception to the §8/§13
+"every review context is cold" mandate: warm resume is legal ONLY for re-verdicting the fix
+delta + resolution of the reviewer's own prior finding — never for new scope, and the cold
+rule stands untouched for round-1 gates and every fresh dispatch. A full cold re-pass of
+both gates is required only when: the fix touches contract surface beyond the finding, the
+changed set exceeds the finding's files, or the same finding fails a second consecutive
+round. Field MIS-004 M-02: the fix was ~10 lines + tests; a full-branch double cold re-pass
+would have re-read the entire milestone diff to validate it.
 
 ## 10. Learnings memory — teach it once
 

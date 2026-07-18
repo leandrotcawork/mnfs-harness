@@ -63,10 +63,22 @@ dispatch; default sonnet, haiku for trivial):
 | **hub-scribe** | sonnet/haiku | Files hub-AUTHORED text: ledger rows, milestone status flips, amendment-log rows, and the commit (branch-check embedded in the command) | Composing rulings/doctrine; committing anything the hub did not author verbatim |
 | **hub-analyst** | sonnet | Read-only evidence verification: chip evidence packs, git READ-ONLY diff spot-checks (diff/show/log only), evidence salvage prep. Reports file:line | Verdicts; checkout/apply/stash; writes |
 
+Instantiation: the roles ship as plugin agent definitions (`harness/agents/hub-ops.md`,
+`hub-scribe.md`, `hub-analyst.md`) — spawn via the Agent tool with that subagent type; the
+agent definition IS the pinned role prompt (audit record), and the hub's per-task SendMessage
+text is the dispatch prompt of record for that task.
+
 Crew agents are PERSISTENT within a hub session: spawn each once, then continue the SAME
 agent via SendMessage (context intact — ops keeps stack state, scribe keeps ledger format,
-analyst keeps the evidence map). Fresh spawn only on context poisoning or a new hub session —
-never cold-spawn per task, that forfeits the whole efficiency gain.
+analyst keeps the evidence map). Fresh spawn on: context poisoning, a new hub session, or a
+MILESTONE BOUNDARY (mandatory respawn — bounds stale-context accumulation); additionally the
+analyst must state the base SHA of its cached knowledge in every report and re-read when the
+hub's question implies a newer SHA. Never cold-spawn per task — that forfeits the whole
+efficiency gain. Ledger: a SendMessage continuation that produces a ledger-relevant artifact
+IS a dispatch — the hub (or scribe) writes the row at send time, anchored to the SendMessage
+text and the crew's output artifact. hub-scribe commits carry a fail-closed branch-guard in
+the same command (`git branch --show-current` == default branch, else abort verbatim) and run
+in the hub's checkout unless the hub names a worktree explicitly.
 
 Delegation boundaries (verbatim-strength): the crew never pushes, never merges, never authors
 or edits doctrine/contract text, never answers chips or the operator, never ratifies. Any
@@ -142,7 +154,8 @@ P7 QA        milestone-close QA: LIVE-DRIVE by a fresh persona vs validation-con
              dual gate — do not stack both (operator-ratified 2026-07-16; field: M-01
              round-1 five-member crew found zero defects, the live drive found the real
              adapter gap + 4 more). Fail → `/correction-create` scopes; the chip dispatches
-             its corrective worker; full re-gate, never-downgrade across rounds
+             its corrective worker; full QA re-drive, never-downgrade across rounds (the P6
+             dual gate re-gates the DELTA per REVIEW §9, not the full diff again)
 P8 CLOSE     evidence per feature at F-*/validation.md; dispatch ledger; CLOSED event to hub
   ↓
 HUB          acceptance (verifies dual-gate + QA evidence) → merge --no-ff to default branch →
@@ -185,7 +198,11 @@ pre-authorized narrow grants for the track's predictable seams — its own compo
 region, its own route's shell-test case, its own SDK domain block; additive-only, released at
 CLOSED, diff called out in the payload — so predictable seam needs don't round-trip as
 REQUESTs (ratified 2026-07-18; field M-04: 3 of 4 escalations were grant-shaped and
-plan-predictable); (h) skill
+plan-predictable). A pre-authorized grant does NOT waive the §3 Files/Module collision test:
+the hub issues it only after verifying at dispatch time that the granted region is disjoint
+from every concurrent track's write-set (and from the hub's own planned edits to the same
+file); overlap found later is still a SPLIT-REQUEST/serialize call, and merge order resolves
+textual conflicts — never two writers editing the same region live; (h) skill
 pin: name the binding doctrine files (core + profile paths) and the profile's superseded-protocol
 denylist — propagated verbatim into every nested worker dispatch (field finding: worker
 skill-discovery auto-resolved to a stale skill — never rely on on-disk skill discovery in
@@ -455,7 +472,9 @@ type; a Pass without a receipt is an acceptance defect.
 **PILOT — selective orchestrator re-verify (ratified 2026-07-18, pilot scope set per
 mission):** when an implementer's evidence marks a lane `ran` with captured output, the
 orchestrating session re-runs only the lanes marked `assumed`/`could-not-run` plus ONE
-spot-check lane of its choice, instead of re-running every lane per slice; full re-run
+spot-check lane — chosen RISK-WEIGHTED (integrity-critical and live-integration lanes first,
+rotate so no lane goes unchecked across a feature), not free choice — instead of re-running
+every lane per slice; full re-run
 remains mandatory at feature close and milestone close (the L0 full-suite backstop is never
 waived). Promote to standing rule only after a mission closes with zero spot-check
 divergences; any divergence ends the pilot and reverts to full per-slice re-runs.

@@ -39,3 +39,6 @@ your dispatch prompt pinned. Never rely on on-disk skill discovery in worktrees.
 9. A false alarm, flake, race, or tooling gotcha you prove in the field is a FINDING — report
    it in your event payload so the hub can ratify it into the profile (core §0). Findings die
    in transcripts unless reported.
+10. Your dispatch prompt may carry pre-authorized seam grants (core §2 item (g)) — they bind
+    exactly as written, nothing wider. P5 self-verification follows core §5, including the
+    selective re-verify PILOT rules when the mission plan enables them.
