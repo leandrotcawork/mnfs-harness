@@ -88,6 +88,33 @@ writes to external systems, …).
 Named skills/protocols/docs that discovery might still surface but which are RETIRED here, with
 supersede dates. Chip prompts pin this list verbatim (core §2 item h).
 
+## 11. Enforcement bindings (core §9)
+`status:` · `provenance:`
+
+Deny rules are repo-side (plugins cannot ship permissions): the repo MUST version
+`.claude/settings.json` containing at least the mandatory block below, adapted to this repo's
+human-gate list (§9). Deny is deterministic — the model cannot override it in any scope.
+
+```json
+{
+  "permissions": {
+    "deny": [
+      "Bash(git push*)",
+      "Bash(git branch -D *)",
+      "Bash(git reset*)",
+      "Bash(git stash*)",
+      "Bash(git clean*)",
+      "Read(.env*)",
+      "Read(**/.env*)"
+    ]
+  }
+}
+```
+
+Also record here: which plugin hooks are active in this repo (merge-gate / dispatch-lint /
+stop-gate), any repo-specific matcher additions, and the waiver protocol pointer (operator
+authorization + ledger row id — core §9 escape-hatch discipline).
+
 ## Amendment log
 
 Append-only. One line per ratification:

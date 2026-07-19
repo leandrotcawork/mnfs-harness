@@ -571,3 +571,69 @@ evidence.
 workers may serve a local live dashboard (pattern: scratchpad `live-server.mjs`, bound to
 127.0.0.1 only, SSE-tailing the per-worker teed logs with live/idle/done state).
 Scratchpad-local, per-session, never committed, never exposed beyond localhost.
+
+## 9. Enforcement layer (0.4.0 — RETRO-MIS-004 amendments, ratified 2026-07-19)
+
+MIS-004 field data: advisory doctrine was rationalized past 13× (mock-only closes) and once
+by the hub itself (false P7 pass). Rules that CAN be deterministic MUST be deterministic.
+The enforcement pyramid, strongest first — place every gate at the highest layer it fits:
+
+1. **settings.json deny rules** (repo-versioned `.claude/settings.json`) — model cannot
+   override, deny wins across all scopes. Profile §11 carries the mandatory block
+   (push / branch -D / reset / stash / clean / secret reads).
+2. **Plugin hooks** (`hooks/hooks.json`, auto-apply while plugin enabled; exit 2 blocks even
+   in bypassPermissions):
+   - `merge-gate.sh` (PreToolUse·Bash): `git merge chip/*` requires an EVIDENCE.md
+     referencing the branch with `P6-DUAL-GATE: AGREEMENT` and, for provider-touching scope,
+     `LIVE-VERIFIED:` or `LIVE-WAIVED-BY-OPERATOR:`.
+   - `dispatch-lint.sh` (PreToolUse·spawn_task): chip prompts must carry `BASE-SHA:`,
+     `CONTRATO:`, `EXEMPLO-IO:`, and `DESIGN-REF:` when FE scope. Missing marker = dispatch
+     physically blocked.
+   - `stop-gate.sh` (Stop): a chip-worktree session claiming CLOSED without an evidence
+     pack (or without the dual-gate marker) is forced to continue — unwritten = didn't happen,
+     now enforced.
+3. **Restricted-tool agents / headless gates**: cold reviews run either via the
+   `gate-reviewer` agent (tools: Read/Grep/Glob — physically cannot edit) or headless
+   `claude -p --allowedTools "Read,Grep,Glob" --permission-mode dontAsk`. A reviewer that
+   cannot edit cannot "fix while reviewing".
+4. **Executable lanes** (scripts with exit codes): `provision-worktree.sh` makes chip base
+   drift impossible by construction (SHA-verified branch + node_modules junction pre-dispatch).
+5. **Advisory doctrine** (.md + skills) — carries the WHY and the judgment calls only.
+   Never rely on this layer for a MUST-NOT.
+
+**Gate markers (canonical vocabulary, grep-stable):** `P6-DUAL-GATE: AGREEMENT` ·
+`LIVE-VERIFIED:` · `LIVE-WAIVED-BY-OPERATOR:` · `RATIFIED-BY-OPERATOR:` · `BASE-SHA:` ·
+`CONTRATO:` · `EXEMPLO-IO:` · `DESIGN-REF:`. Markers are written with real values, never
+empty; a waiver marker is valid only with explicit operator authorization AND a hub-ledger
+row id.
+
+**Content amendments (bind at P2/P5/P6/P7):**
+- **A1 Golden live-fixture corpus:** every provider adapter carries `testdata/` fixtures
+  captured from REAL provider responses (PII-scrubbed). Regression tests load fixtures, never
+  inline hand-written JSON. Any live defect fix MUST freeze the captured body as a fixture in
+  the same change. Hand-written mocks encode the author's assumption — the same wrong
+  assumption as the production struct — and structurally cannot catch shape drift (4 of 5
+  MIS-004 demo-critical defects).
+- **A2 Concrete I/O in contracts:** every validation contract ships ≥1 concrete case with
+  real data (real entity id, real expected values). The chip turns it into a golden test on
+  day 1 (`EXEMPLO-IO:` marker; dispatch-lint enforces presence).
+- **A3 No mock-only close of provider-touching scope:** first wave that touches a provider
+  path live-drives that path before close. Deferral requires `LIVE-WAIVED-BY-OPERATOR:`
+  (merge-gate enforces).
+- **A4 Design-before-dispatch:** an FE chip may not be dispatched before the binding design
+  artifact exists; the brief links the exact file (`DESIGN-REF:`; dispatch-lint enforces).
+  P7 compares rendered UI against that artifact.
+- **A5 P6 evidence minimum:** governance lane + bad-input probes + full typecheck are part of
+  the P6 pack for the touched surfaces — not discovered post-merge.
+- **A7 Policy ratification:** threshold/policy decisions (matching bands, caps, defaults that
+  change business behavior) are flagged in the plan and carry `RATIFIED-BY-OPERATOR:` before
+  ship. A hub ruling is not a substitute for operator ratification on business policy.
+- **A8 Anti-rationalization at P7:** an empty/zero/"—" value in a live drive is NOT
+  automatically "honest degrade". The gate must positively prove the absence is legitimate
+  (upstream really lacks the datum, shown with real data) or treat it as a defect. The hub is
+  not exempt: MIS-004's one false P7 pass was the hub rationalizing.
+
+**Escape hatch discipline:** every deterministic block has exactly one legitimate bypass —
+an explicit operator waiver recorded as a marker + ledger row. Silent workarounds (rewording
+a command to dodge a matcher, editing the evidence to fake a marker) are doctrine violations
+of the highest severity.
