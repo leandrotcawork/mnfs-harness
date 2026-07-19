@@ -94,3 +94,27 @@ harness did not use: settings deny rules, PreToolUse hooks (exit 2 blocks even i
 bypassPermissions), Stop hooks (`decision:block`), restricted-tool agents, headless
 `-p --allowedTools` cold reviewers, and plugin-shipped `hooks/hooks.json`. 0.4.0 moves
 every gate that CAN be deterministic into those layers; doctrine text remains the WHY.
+
+---
+
+## AUDIT-FINAL (2026-07-19, pós-0.4.0) — parecer de fechamento
+
+Auditoria micro dos artefatos 0.4.0 contra docs oficiais de hooks (code.claude.com/docs/en/hooks.md):
+
+**Defeitos encontrados e corrigidos (@8b4c26b):**
+1. Hooks executam no cwd DA SESSÃO, não no project root → merge-gate ancorado em `CLAUDE_PROJECT_DIR`.
+2. dispatch-lint aceitava `BASE-SHA: TBD` → agora exige valor 40-hex real.
+3. Marker `HUB-SESSION:` ausente → agora obrigatório com `local_` id (evidência de campo: 2 eventos de chip Wave C entregues à sessão errada em 2026-07-19 por hub-id stale).
+4. Filtro `"if": "Bash(git merge*)"` avaliado e REJEITADO: comando composto (`cd x && git merge`) pode não casar prefixo → fail-open. Mantido matcher plano + fast-path no script.
+Validação: 6/6 testes de stdin simulado (allow/block em dispatch-lint FE e não-FE, merge-gate via CLAUDE_PROJECT_DIR, passthroughs).
+
+**Riscos residuais ACEITOS (registrados, não escondidos):**
+- Markers são forjáveis (hook checa presença, não verdade). Mitigação: doutrina §9 escape-hatch (workaround silencioso = violação máxima) + auditoria do operador. Degrau 0.5.0 SE houver reincidência: lane executável que escreve o marker a partir de artefatos de verdict (modelo não digita o marker).
+- merge-gate bypassável por merge-por-SHA (sem string `chip/`). Endurecer = arms race; coberto por doutrina.
+- A1 (golden fixtures) não backfilled nos connectors existentes — A3 só protege scope novo até o backfill (fila pós-demo).
+
+**Gap H2 remanescente (recomendação #1 de 0.4.x):** DESIGN-REF força o prompt a apontar artefato, mas nada produz IMAGEM comparável (repo tem zero raster; refs = .dc.html). Falta: design-ref render lane — renderizar .dc.html no browser, capturar PNG em `.mnfs/<mission>/design-ref/`, DESIGN-REF aponta PNG+html, P7 do chip compara side-by-side. Pixel-diff automatizado avaliado e rejeitado (flaky, ROI ruim).
+
+**Custo/velocidade:** hooks ≈ 0 tokens (bash, ms). Referência de ROI: 2 closes falsos de MIS-004 custaram ~7 rodadas corretivas de chip Opus. Ganho de latência disponível sem custo: rodar as duas pernas do P6 dual-gate em paralelo. NÃO adicionar: camadas extras de review (lean-not-double-gate ratificado; o gate real que falhou foi dado-real, não quantidade de reviewers), CI remoto, pixel-diff.
+
+**Deploy gap:** 0.4.0 só existe no repo; sessões correm cache 0.3.3 → enforcement inativo até cache sync (3 targets) + repoint installed_plugins.json + `.claude/settings.json` deny block no marketplace-central.
