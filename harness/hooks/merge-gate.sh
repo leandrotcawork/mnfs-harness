@@ -18,6 +18,10 @@
 
 INPUT="$(cat)"
 
+# Hooks run in the SESSION cwd, not the project root (docs: hooks.md). Anchor to
+# the project so the .mnfs scan is deterministic regardless of prior `cd`.
+[ -n "${CLAUDE_PROJECT_DIR:-}" ] && cd "$CLAUDE_PROJECT_DIR" 2>/dev/null
+
 # Fast path: only gate calls that look like a chip-branch merge.
 case "$INPUT" in
   *"git merge"*chip/*) ;;

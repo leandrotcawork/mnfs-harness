@@ -24,9 +24,13 @@ case "$INPUT" in
 esac
 
 MISSING=""
-printf '%s' "$INPUT" | grep -q "BASE-SHA:"   || MISSING="$MISSING BASE-SHA:"
+# BASE-SHA must carry a REAL 40-hex value (placeholder 'TBD' = drift waiting to happen).
+printf '%s' "$INPUT" | grep -qE 'BASE-SHA:[[:space:]]*\\?"?[0-9a-f]{40}' || MISSING="$MISSING BASE-SHA:(40-hex-value)"
 printf '%s' "$INPUT" | grep -q "CONTRATO:"   || MISSING="$MISSING CONTRATO:"
 printf '%s' "$INPUT" | grep -q "EXEMPLO-IO:" || MISSING="$MISSING EXEMPLO-IO:"
+# HUB-SESSION must carry the hub's real local_ id — stale/absent hub address made
+# chip events land at a stood-down session (field evidence 2026-07-19).
+printf '%s' "$INPUT" | grep -qE 'HUB-SESSION:[[:space:]]*\\?"?local_[0-9a-f-]{8,}' || MISSING="$MISSING HUB-SESSION:(local_id)"
 
 case "$INPUT" in
   *apps/web*|*apps\\\\web*)
@@ -42,6 +46,7 @@ Every chip prompt must carry:
   BASE-SHA: <40-hex base commit>            (kills worktree base drift — executor pain #1, RETRO H7)
   CONTRATO: <validation contract path/ref>  (chip asserts against contract, not vibes)
   EXEMPLO-IO: <one concrete real-data case> (chip writes a golden test on day 1 — RETRO H1/H3)
+  HUB-SESSION: <local_... hub session id>   (stale hub address = lost chip events, field 2026-07-19)
   DESIGN-REF: <exact reference artifact>    (FE scope only — RETRO H2, D-56/58 reshape)
 Add the markers with real values and re-dispatch.
 EOF
