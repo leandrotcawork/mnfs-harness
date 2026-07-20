@@ -1,0 +1,2 @@
+# Shell hooks MUST stay LF — CRLF shebang = "bash: bad interpreter" and breaks enforcement.
+*.sh text eol=lf
