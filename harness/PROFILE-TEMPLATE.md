@@ -115,6 +115,16 @@ Also record here: which plugin hooks are active in this repo (merge-gate / dispa
 stop-gate), any repo-specific matcher additions, and the waiver protocol pointer (operator
 authorization + ledger row id — core §9 escape-hatch discipline).
 
+**Machine mirror (`.harness/config.sh`).** The hooks are METHOD (generic — no repo names). Every
+repo-specific binding they need (artifact dir, evidence-pack glob, chip-branch pattern, FE-surface
+regex, provider-touching regex, session-id/worktree shapes) is declared ONCE in a versioned
+`.harness/config.sh` that the hooks `source` from `$CLAUDE_PROJECT_DIR`. This file is the machine
+mirror of §5 (FE surface / collision axes) + §7 (provider write-paths). Unset keys fall to generic
+defaults matching the reference repo shape, so a repo that matches the defaults may omit it. Start
+from `config.example.sh` (shipped by the plugin). Repo-specific never means editing a shipped hook.
+Promotion of hook changes from source → runtime cache/mirror is operator-gated via
+`scripts/harness-sync.sh` (changes enforcement for every session).
+
 ## Amendment log
 
 Append-only. One line per ratification:
