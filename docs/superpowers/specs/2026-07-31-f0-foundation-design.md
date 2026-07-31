@@ -164,7 +164,8 @@ Release:
 
 Migração — **quiesce-and-cutover** (reconsideração 2026-07-31; substitui DUAL-READ/conversor/journal):
 - Pré-condição: trabalho em voo 0.4 TERMINA no 0.4 antes da troca (1 operador controla os 2 repos — fechar a missão corrente é barato). Sem conversão de estado em voo, sem meio-a-meio.
-- Sequência: (1) quiesce (nenhuma missão aberta) → (2) backup enumerado `.mnfs-backup-<ts>/` (`.mnfs/` + seção hooks do settings + HARNESS-PROFILE) → (3) swap de plugin/settings (mecanismo nativo) → (4) ledger 0.5 nasce ZERADO com `MISSION_OPENED`-gênese cujo payload aponta artefatos 0.4 como leitura histórica (paths, read-only).
+- Sequência restart-safe (rodada Sol 2 — gênese ANTES do swap): (1) quiesce (nenhuma missão aberta) → (2) backup enumerado `.mnfs-backup-<ts>/` (`.mnfs/` + seção hooks do settings + HARNESS-PROFILE) → (3) ledger 0.5 gravado + fsync com evento-gênese cujo payload aponta artefatos 0.4 como leitura histórica (paths, read-only) → (4) swap de plugin/settings (mecanismo nativo) → (5) marcador `.mnfs/migration-done.json {ts, backup_path}`.
+- Guarda no SessionStart: plugin 0.5 ativo + (gênese ausente OU marcador ausente) → selfcheck falha nomeado, dispatch bloqueado; únicas saídas = completar cutover ou restaurar backup. Crash em qualquer fronteira cai nessa guarda — sem missão 0.5 órfã de histórico. Drill por fronteira.
 - Rollback = restaurar backup + reativar 0.4. Um passo, determinístico, coberto por drill.
 - Piloto: mnfs-harness; marketplace-central só migra após piloto operar 0.5 de ponta a ponta.
 - O que foi cortado e por quê: DUAL-READ/shadow-ledger/comparação/journal de conversão eram maquinário para migrar SEM parar — luxo que 1 op/1 máquina não precisa; quiesce elimina a classe inteira de estados intermediários.
@@ -190,6 +191,8 @@ Filtro: solução mais simples que fecha; sem daemon/DB/crypto. Teste da reconsi
 **E8 CORTADA na reconsideração — selfcheck sem cache.** Cache + chave de invalidação = problema novo para economizar ~100ms por sessão. Selfcheck roda inteiro a cada SessionStart. Hooks de transição PROTEGIDA continuam fail-closed se selfcheck da sessão falhou (isso fica; o CACHE morre).
 
 **E9+E10 CORTADAS na reconsideração — migração vira quiesce-and-cutover (§8).** DUAL-READ, shadow-ledger, conversor 0.4→0.5, journal de conversão e comparação em checkpoints eram maquinário para migrar SEM parar o trabalho. 1 operador pode simplesmente terminar a missão em voo no 0.4 e trocar com tudo quiesce. Achados do Sol (fonte do DUAL-READ indefinida, tabela de conversão ausente, crash entre fronteiras) morrem por eliminação da classe: não há estado intermediário para corromper. Fica: backup enumerado + rollback de um passo + drill.
+
+**E11 Cutover restart-safe (rodada Sol 2 — único achado; fecha janela de cutover parcial).** Gênese gravado + fsync ANTES do swap de settings; marcador `migration-done.json` por último; guarda no SessionStart bloqueia dispatch se plugin 0.5 ativo sem gênese/marcador (completar ou restaurar — sem terceiro caminho). Veredito Sol rodada 2: E1-E7 fecham os achados remanescentes no cenário 1-op/1-máquina; cortes não abrem outro buraco; "depois disso, SHIP".
 
 **REFUTADO — registry histórico de FSM/schemas por versão.** Dentro de 0.5.x mudanças são ADITIVAS: o interpretador corrente lê todos os eventos 0.5.x (KAT: log 0.5.0 lido por runtime 0.5.1). Breaking = 0.6 com re-baseline: ledger novo, antigo arquivado com estado final consolidado como evento-gênese. Sem museu de interpretadores.
 
