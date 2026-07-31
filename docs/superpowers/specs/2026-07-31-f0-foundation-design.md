@@ -45,7 +45,7 @@ Escopo F0: ledger de eventos + projetor + FSM + schemas + replay + drills + rele
 
 Escritor único: `runtime/emit.mjs`, invocado por (a) cartão/skill via Bash no hub, (b) hooks (stdin JSON → mesmo módulo). Processos Node distintos podem colidir →
 
-1. **Lock `mkdir` atômico** (NTFS-safe, zero dependência): `.mnfs/.lock/` via mkdir (EEXIST = ocupado); dono grava `.lock/owner.json {pid, ts}`; retry 50ms×40 (2s); stale = pid morto OU ts>30s → roubo logado.
+1. **Lock `mkdir` atômico** (NTFS-safe, zero dependência): `.mnfs/.lock/` via mkdir (EEXIST = ocupado); dono grava `.lock/owner.json {pid, ts}`; retry 50ms×40 (2s); stale = SÓ pid comprovadamente morto → roubo logado (ver E2); dono vivo lento = erro nomeado `LOCK_HELD`, nunca remoção por idade.
 2. **Append durável** (dentro do lock): validar tail → seq/prev_hash do último → `appendFileSync` linha JSONL + `fsync` → liberar. Linha <1 KB = 1 write.
 3. **Reparo de tail**: última linha com JSON truncado OU hash que não fecha → truncar SÓ ela (fsync não completou = evento nunca aceito), log `repair` em stderr. Linha com hash válido NUNCA truncada.
 4. **Idempotência**: `idempotency_key` duplicada dentro do lock → no-op com sucesso.
@@ -121,7 +121,7 @@ Catálogo versionado, cada entrada `{id, inject, expect}`; TODA falha termina em
 | D6 | cursor.seq além do log | rebuild, sem crash |
 | D7 | tipo de evento desconhecido | emit E project rejeitam |
 | D8 | payload 2 KB | emit rejeita |
-| D9 | lock stale (pid morto) | roubo após 30s com log |
+| D9 | lock stale (pid morto) | roubo com log; dono vivo → LOCK_HELD |
 
 KATs adicionais: emit concorrente ×2 processos reais (spawn, cenário hub+hook) · crash pós-write pré-fsync · property com seed: incremental == rebuild (state_hash idêntico) · 10k eventos <200ms · interleaving A3 (ACK/CLAIM entre dreno e expiração, com/sem re-dispatch) · ack tardio + worker morto → FAILED/REPLAN no mesmo toque · transição ilegal · 3º dispatch idêntico rejeitado · agregação com BLOCKED · override auditado.
 
@@ -159,21 +159,21 @@ Schemas empacotados NO plugin (versão do plugin = versão dos schemas).
 Release:
 - Plugin semver; `harness_version` em plugin.json E em todo evento emitido (replay sabe qual versão interpretava cada trecho).
 - Gate de release: `npm test` verde + `runtime/selfcheck.mjs` (ajv compila schemas, routing.json válido, tabela FSM íntegra, versões batem) + entrada no HARNESS-CHANGELOG. Vermelho = não versiona.
-- Selfcheck também no SessionStart (cacheado): bundle incompleto detectado antes de qualquer dispatch.
+- Selfcheck também no SessionStart, SEM cache: roda inteiro toda sessão (~100ms com ajv). Cache + chave de invalidação = problema novo para economizar nada (reconsideração 2026-07-31).
 - Schema de evento: mudanças aditivas dentro de 0.5.x; breaking = 0.6.
 
-Migração:
-- Estados `LEGACY → MIGRATING → DUAL-READ → CUTOVER` (+`ROLLED-BACK`) em `.mnfs/migration.json` por repo.
-- Trabalho em voo 0.4: termina no 0.4 OU re-validado (manifests re-emitidos como eventos 0.5 via `harness-migrate`, actor "migration"). Nunca meio-a-meio.
-- DUAL-READ: hooks 0.5 só observam (log, sem exit 2) enquanto 0.4 decide; divergência = bug report. CUTOVER: 0.5 decide, hooks 0.4 removidos do settings (cutover físico = mecanismo nativo de plugin/settings).
-- Backup `.mnfs-backup-<ts>/` antes de escrever; ROLLED-BACK = restaurar + reativar 0.4 (procedimento coberto por drill).
-- Piloto de migração: mnfs-harness; marketplace-central só após CUTOVER provado.
+Migração — **quiesce-and-cutover** (reconsideração 2026-07-31; substitui DUAL-READ/conversor/journal):
+- Pré-condição: trabalho em voo 0.4 TERMINA no 0.4 antes da troca (1 operador controla os 2 repos — fechar a missão corrente é barato). Sem conversão de estado em voo, sem meio-a-meio.
+- Sequência: (1) quiesce (nenhuma missão aberta) → (2) backup enumerado `.mnfs-backup-<ts>/` (`.mnfs/` + seção hooks do settings + HARNESS-PROFILE) → (3) swap de plugin/settings (mecanismo nativo) → (4) ledger 0.5 nasce ZERADO com `MISSION_OPENED`-gênese cujo payload aponta artefatos 0.4 como leitura histórica (paths, read-only).
+- Rollback = restaurar backup + reativar 0.4. Um passo, determinístico, coberto por drill.
+- Piloto: mnfs-harness; marketplace-central só migra após piloto operar 0.5 de ponta a ponta.
+- O que foi cortado e por quê: DUAL-READ/shadow-ledger/comparação/journal de conversão eram maquinário para migrar SEM parar — luxo que 1 op/1 máquina não precisa; quiesce elimina a classe inteira de estados intermediários.
 
-## 9. Emendas — rodada Sol F0-1 (2026-07-31, passes construtivo + adversarial)
+## 9. Emendas — rodada Sol F0-1 (2026-07-31) + reconsideração anti-over-engineering (aprovada pelo operador 2026-07-31)
 
-Filtro: solução mais simples que fecha; sem daemon/DB/crypto; refutar over-engineering.
+Filtro: solução mais simples que fecha; sem daemon/DB/crypto. Teste da reconsideração aplicado item a item: "se cortar, qual resultado de missão piora?" Cortados = nenhum piora. Mantidos = falso verde, status mentiroso ou veredicto errado.
 
-**E1 Canonicalização do hash (fecha "canonical indefinido").** `runtime/canonical.mjs` (~30 ln, versionado `canon_v: 1`): UTF-8; chaves ordenadas lexicograficamente, recursivo; SÓ inteiros (float proibido em evento — valores fracionários viram string ou inteiro escalado); timestamps RFC3339 UTC com ms; campo opcional ausente = OMITIDO (null proibido); sem normalização Unicode (mesmo escritor, bytes como estão). `hash` = sha256 dos bytes canônicos do evento sem `hash`; `prev_hash` INCLUÍDO no preimage. MESMA função para `state_hash`. KATs com vetores byte-exatos e digests esperados.
+**E1 Canonicalização MÍNIMA (simplificada na reconsideração).** `canonical()` = `JSON.stringify` com chaves ordenadas recursivamente (~10 ln). Só o runtime escreve e só o runtime lê — regras de unicode/float/null e vetores KAT byte-exatos eram cerimônia cross-runtime que não existe aqui; cortadas. `hash` = sha256 dos bytes canônicos do evento sem `hash`; `prev_hash` INCLUÍDO no preimage (cadeia fica: custa 2 linhas e pega edição manual do ledger — ameaça real: worker confuso com Write tool). MESMA função para `state_hash`. Verificação: property test escreve→lê→confere, sem vetores fixos.
 
 **E2 Lock sem roubo por idade (fecha crítico dono-vivo).** Roubo APENAS com PID comprovadamente morto (process check). Sequência de roubo serializada por steal-mutex (`.mnfs/.lock-steal/` mkdir) → recheca morte → rmdir+mkdir do lock principal → libera steal-mutex. Owner token imutável em `owner.json {token, pid, acquired_at}`; escritor REVALIDA token imediatamente antes do append e da publicação do checkpoint (re-read + compare). Dono vivo lento = contender retorna erro nomeado `LOCK_HELD` → surfaced como pendência HITL, nunca remoção. KATs: dono vivo pausado >30s + 2 emitters; double-steal com 2 contenders.
 
@@ -183,15 +183,13 @@ Filtro: solução mais simples que fecha; sem daemon/DB/crypto; refutar over-eng
 
 **E5 Contrato durável ACK/CLAIM no F0 (fecha A3-A5 ausentes).** Paths: `.mnfs/acks/<dispatch_id>-a<attempt>.ack` · `.mnfs/claims/<dispatch_id>-a<attempt>.json`. Worker grava artefato ANTES de notificar. `attempt` passa a ser campo OBRIGATÓRIO em manifest, ack, claim e evento (corrige claim.schema §6). Reconcile sob o lock único, ordem fixa: drenar disco → revalidar artefato do attempt no instante da decisão → expirar → compensar (LATE_ARRIVAL por tipo). Interleavings da Seção 5 viram drills nomeados deste protocolo.
 
-**E6 Sandbox de drill como fronteira real (fecha guard afirmado).** Executor cria sandbox com arquivo-nonce; TODO helper mutador resolve `realpath` e exige prefixo sob o sandbox root passado EXPLICITAMENTE (nunca herdado de CLAUDE_PROJECT_DIR); rejeita symlink/junction para fora e `.mnfs` sem nonce. KAT: drill apontado para repo real → recusa nomeada.
+**E6 Sandbox de drill simples (simplificada na reconsideração).** Executor de drill cria tmpdir próprio e passa o root EXPLICITAMENTE a todo helper mutador (nunca herdado de CLAUDE_PROJECT_DIR); helper exige prefixo sob esse root. KAT: drill apontado para repo real → recusa nomeada. Cortado: nonce, realpath, defesa contra symlink/junction — ninguém ataca a própria máquina; o risco real (env herdado apontando pro repo) o prefix-check explícito já fecha.
 
 **E7 Agregação total (fecha FAILED indefinido).** Ordem de severidade: `BLOCKED > FAILED > INTEGRATING > IN-REVIEW > IMPLEMENTING > DISPATCHED > PLANNED > CLOSED`. Milestone/missão = pior estado entre filhas + `{worst_feature, reason}` no state-view. MILESTONE_CLOSED exige todas CLOSED + GATE_RESULT(M) accept (inalterado). KATs: CLOSED+FAILED, FAILED+BLOCKED, retry pós-FAILED.
 
-**E8 Selfcheck com chave de cache (fecha cache cego).** Chave = sha256(plugin version ∥ hash dos schemas ∥ hash da tabela FSM ∥ seção hooks do settings). Qualquer mudança → revalida. Hooks de transição PROTEGIDA exigem selfcheck válido da versão corrente — sem ele, fail-closed com erro nomeado.
+**E8 CORTADA na reconsideração — selfcheck sem cache.** Cache + chave de invalidação = problema novo para economizar ~100ms por sessão. Selfcheck roda inteiro a cada SessionStart. Hooks de transição PROTEGIDA continuam fail-closed se selfcheck da sessão falhou (isso fica; o CACHE morre).
 
-**E9 Migração com tabela + journal (fecha conversão inespecificada).** Tabela explícita: linha de ledger.md → evento com `actor: migration`; chip → FEATURE_PLANNED/DISPATCHED/CLOSED conforme estado; EVIDENCE → claim retroativo (sem receipt — marcado `unverified-legacy`). Conversão por item com marcador em `migration-journal.jsonl` (idempotente: item marcado não re-converte). Backup enumerado: `.mnfs/` + seção hooks do settings + HARNESS-PROFILE. Cutover em 2 passos recuperáveis: (1) evento CUTOVER_INTENT no journal → (2) swap de settings → (3) CUTOVER_DONE; crash entre passos = journal diz exatamente onde retomar ou reverter. Rollback = restaurar backup + journal reverso. Drill por fronteira, incluindo missão parcialmente integrada.
-
-**E10 DUAL-READ com fonte definida (fecha comparação vazia).** Sem hook 0.5 "observando" mágica: o MESMO conversor do harness-migrate roda no reconcile-on-touch em modo shadow — converte artefatos 0.4 correntes → eventos observacionais em `.mnfs/shadow-events.jsonl` (cursor + idempotency próprios), projeta shadow-state e compara com o estado 0.4 declarado em checkpoints definidos (fim de feature, fim de milestone). Divergência = bug report automático e BLOQUEIA CUTOVER.
+**E9+E10 CORTADAS na reconsideração — migração vira quiesce-and-cutover (§8).** DUAL-READ, shadow-ledger, conversor 0.4→0.5, journal de conversão e comparação em checkpoints eram maquinário para migrar SEM parar o trabalho. 1 operador pode simplesmente terminar a missão em voo no 0.4 e trocar com tudo quiesce. Achados do Sol (fonte do DUAL-READ indefinida, tabela de conversão ausente, crash entre fronteiras) morrem por eliminação da classe: não há estado intermediário para corromper. Fica: backup enumerado + rollback de um passo + drill.
 
 **REFUTADO — registry histórico de FSM/schemas por versão.** Dentro de 0.5.x mudanças são ADITIVAS: o interpretador corrente lê todos os eventos 0.5.x (KAT: log 0.5.0 lido por runtime 0.5.1). Breaking = 0.6 com re-baseline: ledger novo, antigo arquivado com estado final consolidado como evento-gênese. Sem museu de interpretadores.
 
